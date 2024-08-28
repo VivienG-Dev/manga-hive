@@ -19,6 +19,7 @@
     "axios": "^1.7.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.436.0",
     "pinia": "^2.1.7",
     "radix-vue": "^1.9.4",
     "tailwind-merge": "^2.5.2",

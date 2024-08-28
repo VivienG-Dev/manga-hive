@@ -2,6 +2,7 @@
 import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@iconify/vue'
+import { Menu } from 'lucide-vue-next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,7 +74,7 @@ const logout = async () => {
     <div class="flex md:hidden items-center gap-4">
       <DropdownMenu v-if="isAuthenticated">
         <DropdownMenuTrigger as-child>
-          <Button variant="outline"> Open </Button>
+          <Button variant="ghost"><Menu :size="24" /> </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent class="w-56">
           <DropdownMenuLabel>Welcome, {{ user?.username || 'Guest' }}!</DropdownMenuLabel>
