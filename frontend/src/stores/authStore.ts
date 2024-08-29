@@ -22,22 +22,32 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config;
     if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
+      // Check if this is a login request
+      if (originalRequest.url.includes('/auth/login')) {
+        // This is a login request, don't try to refresh token
+        return Promise.reject(error);
+      }
+      
+      originalRequest._retry = true;
       try {
-        const newToken = await useAuthStore().refreshToken()
-        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
-        return api(originalRequest)
+        const authStore = useAuthStore();
+        const newToken = await authStore.refreshToken();
+        if (newToken) {
+          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
       } catch (refreshError) {
-        // If refresh fails, log out the user
-        useAuthStore().logout()
-        return Promise.reject(refreshError)
+        // If refresh fails, logout the user
+        const authStore = useAuthStore();
+        await authStore.logout();
+        return Promise.reject(refreshError);
       }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 interface User {
   id: number
@@ -51,13 +61,13 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     isAuthenticated: false,
-    refreshInterval: null as any
+    refreshInterval: null as any,
+    isLoading: true,
   }),
   actions: {
     async refreshToken() {
       try {
         const response = await api.post('/auth/refresh-token')
-        console.log('Access token refreshed:', response.data.accessToken)
         localStorage.setItem('accessToken', response.data.accessToken)
         this.isAuthenticated = true
         return response.data.accessToken
@@ -66,24 +76,6 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = false
         this.user = null
         // Handle error (e.g., redirect to login page)
-      }
-    },
-    startRefreshInterval() {
-      if (this.refreshInterval) {
-        clearInterval(this.refreshInterval)
-      }
-      // Check auth status every 14 minutes (assuming 15-minute token lifespan)
-      this.refreshInterval = setInterval(
-        async () => {
-          await this.refreshToken()
-        },
-        2 * 60 * 1000
-      )
-    },
-    stopRefreshInterval() {
-      if (this.refreshInterval) {
-        clearInterval(this.refreshInterval)
-        this.refreshInterval = null
       }
     },
     async fetchUserData() {
@@ -104,8 +96,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await api.post('/auth/login', { email, password })
         localStorage.setItem('accessToken', response.data.accessToken)
         this.isAuthenticated = true
-        // await this.fetchUserData()
-        // this.startRefreshInterval()
+        await this.fetchUserData()
         return response.data
       } catch (error) {
         console.error('Login failed', error)
@@ -131,31 +122,38 @@ export const useAuthStore = defineStore('auth', {
         localStorage.removeItem('accessToken')
         this.user = null
         this.isAuthenticated = false
-        // this.stopRefreshInterval()
       } catch (error) {
         console.error('Logout failed:', error)
       }
     },
     async checkAuthStatus() {
-      const token = localStorage.getItem('accessToken')
+      this.isLoading = true; // Set loading to true
+      const token = localStorage.getItem('accessToken');
       if (token) {
         try {
-          await this.fetchUserData()
-          // this.startRefreshInterval()
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const expiresIn = payload.exp - Math.floor(Date.now() / 1000);
+          if (expiresIn < 300) { // 5 minutes
+            await this.refreshToken();
+          }
+          await this.fetchUserData();
         } catch (error) {
-          await this.refreshToken()
+          console.error('Error checking auth status:', error);
+          this.isAuthenticated = false;
+          this.user = null;
         }
       } else {
-        this.isAuthenticated = false
-        this.user = null
+        this.isAuthenticated = false;
+        this.user = null;
       }
+      this.isLoading = false; // Set loading to false when done
     },
-    async fetchUserProfile(username: string) {
+    async fetchPublicProfile(username: string) {
       try {
         const response = await api.get(`/users/${username}`)
         return response.data
       } catch (error) {
-        console.error('Failed to fetch user profile:', error)
+        console.error('Failed to fetch public profile:', error)
         throw error
       }
     }

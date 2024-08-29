@@ -74,6 +74,9 @@ export class AuthService {
   }
 
   async logout(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
     await this.prisma.refreshToken.delete({ where: { token: refreshToken } });
     return { message: 'Logged out successfully' };
   }
@@ -109,17 +112,30 @@ export class AuthService {
     expiryDate.setDate(expiryDate.getDate() + 3);
 
     try {
-      await this.prisma.refreshToken.upsert({
+      // First, try to find an existing refresh token for this user
+      const existingToken = await this.prisma.refreshToken.findUnique({
         where: { userId },
-        update: {
-          token: refreshToken,
-        },
-        create: {
-          userId,
-          token: refreshToken,
-          expiresAt: expiryDate,
-        },
       });
+
+      if (existingToken) {
+        // If a token exists, update it
+        await this.prisma.refreshToken.update({
+          where: { userId },
+          data: {
+            token: refreshToken,
+            expiresAt: expiryDate,
+          },
+        });
+      } else {
+        // If no token exists, create a new one
+        await this.prisma.refreshToken.create({
+          data: {
+            userId,
+            token: refreshToken,
+            expiresAt: expiryDate,
+          },
+        });
+      }
     } catch (error) {
       Logger.error('Error storing refresh token: ' + error.message);
       throw new InternalServerErrorException('Something went wrong');

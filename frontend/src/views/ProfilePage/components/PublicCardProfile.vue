@@ -26,13 +26,7 @@ async function loadUserData() {
   error.value = null
 
   try {
-    if (authStore.isAuthenticated && authStore.user?.username === username) {
-      console.log('User is viewing their own profile')
-      userData.value = authStore.user
-    } else {
-      console.log("User is viewing another user's profile")
-      userData.value = await authStore.fetchUserProfile(username)
-    }
+    userData.value = await authStore.fetchPublicProfile(username)
   } catch (e: any) {
     console.error('Error fetching user profile:', e)
     error.value = e.response?.data?.message || 'Failed to load user profile'

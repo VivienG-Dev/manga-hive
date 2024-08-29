@@ -42,7 +42,7 @@ const logout = async () => {
       <h1 class="text-xl font-bold">Manga Hive</h1>
     </RouterLink>
     <div class="hidden md:flex items-center gap-4">
-      <RouterLink v-if="isAuthenticated" :to="`/users/${user?.username}`">Profile</RouterLink>
+      <RouterLink v-if="isAuthenticated" to="/profile">Profile</RouterLink>
       <RouterLink v-else to="/sign-in"><Button>Login</Button></RouterLink>
       <div class="flex items-center gap-4" v-if="isAuthenticated">
         <p>Welcome, {{ user?.username || 'Guest' }}!</p>
@@ -80,7 +80,7 @@ const logout = async () => {
           <DropdownMenuLabel>Welcome, {{ user?.username || 'Guest' }}!</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <RouterLink v-if="isAuthenticated" :to="`/users/${user?.username}`"
+            <RouterLink v-if="isAuthenticated" to="/profile"
               ><DropdownMenuItem class="cursor-pointer"> Profile </DropdownMenuItem></RouterLink
             >
             <DropdownMenuItem>

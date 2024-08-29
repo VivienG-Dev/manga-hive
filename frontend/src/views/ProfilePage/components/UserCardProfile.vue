@@ -4,8 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-const route = useRoute()
-const router = useRouter()
 const authStore = useAuthStore()
 
 interface UserData {
@@ -21,21 +19,30 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 
 async function loadUserData() {
-  const username = route.params.username as string
   loading.value = true
   error.value = null
 
   try {
-    if (authStore.isAuthenticated && authStore.user?.username === username) {
+    if (authStore.isLoading) {
+      await new Promise(resolve => {
+        const checkInterval = setInterval(() => {
+          if (!authStore.isLoading) {
+            clearInterval(checkInterval)
+            resolve(true)
+          }
+        }, 100)
+      })
+    }
+
+    if (authStore.isAuthenticated && authStore.user) {
       console.log('User is viewing their own profile')
       userData.value = authStore.user
     } else {
-      console.log("User is viewing another user's profile")
-      userData.value = await authStore.fetchUserProfile(username)
+      error.value = 'You must be logged in to view this page'
     }
   } catch (e: any) {
-    console.error('Error fetching user profile:', e)
-    error.value = e.response?.data?.message || 'Failed to load user profile'
+    console.error('Error loading user profile:', e)
+    error.value = 'Failed to load user profile'
   } finally {
     loading.value = false
   }
@@ -46,9 +53,9 @@ onMounted(async () => {
 })
 
 watch(
-  () => route.params.username,
-  async (newUsername, oldUsername) => {
-    if (newUsername !== oldUsername) {
+  () => authStore.user,
+  async (newUser) => {
+    if (newUser) {
       await loadUserData()
     }
   }
@@ -67,7 +74,7 @@ watch(
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
         <div v-if="authStore.isAuthenticated && authStore.user?.id === userData.id">
-          <button>Edit Profile</button>
+          <button class="bg-white bg-opacity-60 p-2 rounded-md">Edit Profile</button>
         </div>
       </CardHeader>
       <CardContent class="relative -top-12 flex flex-col justify-center items-center h-2/6 gap-2">

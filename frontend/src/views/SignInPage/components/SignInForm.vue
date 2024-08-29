@@ -58,7 +58,7 @@ async function login() {
     await authStore.login(email.value, password.value)
     email.value = ''
     password.value = ''
-    router.push('/users/' + user.value?.username)
+    router.push('/profile')
   } catch (error) {
     if (error instanceof z.ZodError) {
       // Handle Zod validation errors

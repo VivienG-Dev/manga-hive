@@ -28,10 +28,15 @@ const router = createRouter({
       component: () => import('@/views/SignUpPage/SignUpView.vue')
     },
     {
-      path: '/users/:username',
-      name: 'profile',
-      component: () => import('@/views/ProfilePage/ProfileView.vue')
-      // meta: { requiresAuth: true }
+      path: '/profile',
+      name: 'userProfile',
+      component: () => import('@/views/ProfilePage/UserProfileView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/u/:username',
+      name: 'publicProfile',
+      component: () => import('@/views/ProfilePage/PublicProfileView.vue')
     }
   ]
 })
