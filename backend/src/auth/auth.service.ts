@@ -91,6 +91,7 @@ export class AuthService {
   }
 
   async generateAccessToken(userId: number) {
+    console.log('Generating access token for user: ' + userId);
     const payload = { userId: userId };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = crypto.randomUUID();
@@ -120,7 +121,7 @@ export class AuthService {
         },
       });
     } catch (error) {
-      Logger.error(error.message);
+      Logger.error('Error storing refresh token: ' + error.message);
       throw new InternalServerErrorException('Something went wrong');
     }
   }

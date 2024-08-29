@@ -19,6 +19,26 @@ api.interceptors.request.use(
   }
 )
 
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      try {
+        const newToken = await useAuthStore().refreshToken()
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        // If refresh fails, log out the user
+        useAuthStore().logout()
+        return Promise.reject(refreshError)
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 interface User {
   id: number
   email: string
@@ -31,12 +51,13 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     isAuthenticated: false,
-    refreshInterval: null as number | null
+    refreshInterval: null as any
   }),
   actions: {
     async refreshToken() {
       try {
         const response = await api.post('/auth/refresh-token')
+        console.log('Access token refreshed:', response.data.accessToken)
         localStorage.setItem('accessToken', response.data.accessToken)
         this.isAuthenticated = true
         return response.data.accessToken
@@ -56,7 +77,7 @@ export const useAuthStore = defineStore('auth', {
         async () => {
           await this.refreshToken()
         },
-        13 * 60 * 1000
+        2 * 60 * 1000
       )
     },
     stopRefreshInterval() {
@@ -83,8 +104,8 @@ export const useAuthStore = defineStore('auth', {
         const response = await api.post('/auth/login', { email, password })
         localStorage.setItem('accessToken', response.data.accessToken)
         this.isAuthenticated = true
-        await this.fetchUserData()
-        this.startRefreshInterval()
+        // await this.fetchUserData()
+        // this.startRefreshInterval()
         return response.data
       } catch (error) {
         console.error('Login failed', error)
@@ -110,7 +131,7 @@ export const useAuthStore = defineStore('auth', {
         localStorage.removeItem('accessToken')
         this.user = null
         this.isAuthenticated = false
-        this.stopRefreshInterval()
+        // this.stopRefreshInterval()
       } catch (error) {
         console.error('Logout failed:', error)
       }
@@ -120,7 +141,7 @@ export const useAuthStore = defineStore('auth', {
       if (token) {
         try {
           await this.fetchUserData()
-          this.startRefreshInterval()
+          // this.startRefreshInterval()
         } catch (error) {
           await this.refreshToken()
         }
