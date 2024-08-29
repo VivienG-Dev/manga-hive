@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomePage/HomeView.vue'
-import UserProfile from '../views/UserProfile.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,8 +29,8 @@ const router = createRouter({
     },
     {
       path: '/users/:username',
-      name: 'userProfile',
-      component: UserProfile
+      name: 'profile',
+      component: () => import('@/views/ProfilePage/ProfileView.vue')
       // meta: { requiresAuth: true }
     }
   ]

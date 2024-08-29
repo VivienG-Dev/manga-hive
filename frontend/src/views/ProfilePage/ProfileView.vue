@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import UserProfile from '@/components/UserProfile.vue'
+import CardProfile from './components/CardProfile.vue'
 </script>
 
 <template>
   <main>
-    <UserProfile />
+    <CardProfile />
   </main>
 </template>
