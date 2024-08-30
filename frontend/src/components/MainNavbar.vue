@@ -36,8 +36,7 @@ const logout = async () => {
 
 <template>
   <nav
-    class="sticky top-0 flex justify-between items-center p-2 rounded-lg shadow dark:shadow-none bg-white dark:bg-background"
-  >
+    class="sticky top-0 z-50 flex justify-between items-center p-2 rounded-lg shadow dark:shadow-none bg-white dark:bg-background">
     <RouterLink to="/" class="text-3xl font-bold">
       <h1 class="text-xl font-bold">Manga Hive</h1>
     </RouterLink>
@@ -52,14 +51,10 @@ const logout = async () => {
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="ghost">
-              <Icon
-                icon="radix-icons:moon"
-                class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-              />
-              <Icon
-                icon="radix-icons:sun"
-                class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-              />
+              <Icon icon="radix-icons:moon"
+                class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Icon icon="radix-icons:sun"
+                class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span class="sr-only">Toggle theme</span>
             </Button>
           </DropdownMenuTrigger>
@@ -74,15 +69,17 @@ const logout = async () => {
     <div class="flex md:hidden items-center gap-4">
       <DropdownMenu v-if="isAuthenticated">
         <DropdownMenuTrigger as-child>
-          <Button variant="ghost"><Menu :size="24" /> </Button>
+          <Button variant="ghost">
+            <Menu :size="24" />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent class="w-56">
           <DropdownMenuLabel>Welcome, {{ user?.username || 'Guest' }}!</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <RouterLink v-if="isAuthenticated" to="/profile"
-              ><DropdownMenuItem class="cursor-pointer"> Profile </DropdownMenuItem></RouterLink
-            >
+            <RouterLink v-if="isAuthenticated" to="/profile">
+              <DropdownMenuItem class="cursor-pointer"> Profile </DropdownMenuItem>
+            </RouterLink>
             <DropdownMenuItem>
               <span>Settings</span>
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
@@ -104,14 +101,10 @@ const logout = async () => {
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="ghost">
-              <Icon
-                icon="radix-icons:moon"
-                class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-              />
-              <Icon
-                icon="radix-icons:sun"
-                class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-              />
+              <Icon icon="radix-icons:moon"
+                class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Icon icon="radix-icons:sun"
+                class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span class="sr-only">Toggle theme</span>
             </Button>
           </DropdownMenuTrigger>
