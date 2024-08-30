@@ -18,7 +18,8 @@ model User {
   email                 String    @unique
   password              String?
   username              String    @unique
-  imageUrl              String?
+  avatarUrl             String?
+  backgroundImageUrl    String?
   googleId              String?   @unique
   emailVerificationToken String?
   emailVerified         Boolean   @default(false)
@@ -43,31 +44,22 @@ model RefreshToken {
 model LibraryEntry {
   id        Int      @id @default(autoincrement())
   userId    Int
+  malId     Int
   itemType  ItemType
-  itemId    Int
-  status    Status   @default(PLAN_TO_WATCH)
-  rating    Int?
-  progress  Int      @default(0)
-  notes     String?
-  favorite  Boolean  @default(false)
+  status    Status   @default(PLAN_TO_READ)
+  title     String   @db.VarChar(255)
+  imageUrl  String?  @db.Text
+  synopsis  String?  @db.Text
+  authors   String?  @db.Text
+  genres    String?  @db.Text
+  chapters  Int?
+  volumes   Int?
+  score     Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
 
-  @@unique([userId, itemType, itemId])
-}
-
-model Manga {
-  id          Int      @id @default(autoincrement())
-  malId       Int      @unique // MyAnimeList ID
-  title       String
-  imageUrl    String?
-  description String?
-  chapters    Int?
-  volumes     Int?
-  status      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  @@unique([userId, malId, itemType])
 }
 
 enum ItemType {
@@ -75,9 +67,9 @@ enum ItemType {
 }
 
 enum Status {
-  WATCHING
+  READING
   COMPLETED
   ON_HOLD
   DROPPED
-  PLAN_TO_WATCH
+  PLAN_TO_READ
 }
