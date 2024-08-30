@@ -12,16 +12,16 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
-import { ItemType } from '@prisma/client';
+// import { ItemType } from '@prisma/client';
 import { Request } from 'express';
 import { Public } from '../auth/decorators/public.decorator';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Version('1')
   @Get('me')
   getMe(@Req() req: Request) {
@@ -43,7 +43,7 @@ export class UsersController {
     return this.usersService.findByUsername(username, requestingUserId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Version('1')
   @Put('me')
   updateMe(@Req() req: Request, @Body() userDto: Partial<UserDto>) {
@@ -51,30 +51,11 @@ export class UsersController {
     return this.usersService.update(userId, userDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Version('1')
   @Delete('me')
   removeMe(@Req() req: Request) {
     const userId = (req.user as any).userId;
     return this.usersService.remove(userId);
-  }
-
-  @UseGuards(AuthGuard)
-  @Version('1')
-  @Post('library')
-  async addToLibrary(
-    @Req() req: Request,
-    @Body() body: { malId: number; itemType: ItemType },
-  ) {
-    const userId = (req.user as any).userId;
-    return this.usersService.addToLibrary(userId, body.malId, body.itemType);
-  }
-
-  @UseGuards(AuthGuard)
-  @Version('1')
-  @Get('library')
-  async getUserLibrary(@Req() req: Request) {
-    const userId = (req.user as any).userId;
-    return this.usersService.getUserLibrary(userId);
   }
 }
