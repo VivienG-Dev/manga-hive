@@ -4,7 +4,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ItemType, Status } from '@prisma/client';
 import { UserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -19,7 +18,8 @@ export class UsersService {
         id: true,
         username: true,
         email: true,
-        imageUrl: true,
+        avatarUrl: true,
+        backgroundImageUrl: true,
         private: true,
         libraryEntries: true,
       },
@@ -39,7 +39,8 @@ export class UsersService {
         id: true,
         username: true,
         email: true,
-        imageUrl: true,
+        avatarUrl: true,
+        backgroundImageUrl: true,
         private: true,
         libraryEntries: true,
       },
@@ -106,30 +107,6 @@ export class UsersService {
       where: {
         id,
       },
-    });
-  }
-
-  async addToLibrary(userId: number, malId: number, itemType: ItemType) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return this.prisma.libraryEntry.create({
-      data: {
-        userId: userId,
-        itemType: itemType,
-        itemId: malId,
-        status: Status.PLAN_TO_WATCH,
-      },
-    });
-  }
-
-  async getUserLibrary(userId: number) {
-    return this.prisma.libraryEntry.findMany({
-      where: { userId: userId },
     });
   }
 }
