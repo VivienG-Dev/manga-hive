@@ -6,13 +6,28 @@ import { Status, ItemType } from '@prisma/client';
 export class LibraryService {
   constructor(private prisma: PrismaService) {}
 
-  async addToLibrary(userId: number, data: { malId: number; itemType: ItemType; title: string; imageUrl: string; synopsis: string; authors: string; genres: string; chapters: number; volumes: number; score: number; }) {
+  async addToLibrary(userId: number, data: { 
+    malId: number; 
+    itemType: ItemType; 
+    status: Status; // Add this line
+    title: string; 
+    imageUrl: string; 
+    synopsis: string; 
+    authors: string; 
+    genres: string; 
+    chapters: number; 
+    volumes: number; 
+    userScore: number; 
+    chaptersProgress: number; 
+    volumesProgress: number; 
+    notes: string; 
+  }) {
     return this.prisma.libraryEntry.create({
       data: {
         userId,
         malId: data.malId,
         itemType: data.itemType,
-        status: Status.PLAN_TO_READ,
+        status: data.status, // Use the status provided by the user
         title: data.title,
         imageUrl: data.imageUrl,
         synopsis: data.synopsis,
@@ -20,7 +35,10 @@ export class LibraryService {
         genres: data.genres,
         chapters: data.chapters,
         volumes: data.volumes,
-        score: data.score,
+        userScore: data.userScore,
+        chaptersProgress: data.chaptersProgress,
+        volumesProgress: data.volumesProgress,
+        notes: data.notes,
       },
     });
   }

@@ -42,22 +42,25 @@ model RefreshToken {
 }
 
 model LibraryEntry {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  malId     Int
-  itemType  ItemType
-  status    Status   @default(PLAN_TO_READ)
-  title     String   @db.VarChar(255)
-  imageUrl  String?  @db.Text
-  synopsis  String?  @db.Text
-  authors   String?  @db.Text
-  genres    String?  @db.Text
-  chapters  Int?
-  volumes   Int?
-  score     Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  malId           Int
+  itemType        ItemType
+  status          Status   @default(PLAN_TO_READ)
+  title           String   @db.VarChar(255)
+  imageUrl        String?  @db.Text
+  synopsis        String?  @db.Text
+  authors         String?  @db.Text
+  genres          String?  @db.Text
+  chapters        Int?
+  volumes         Int?
+  userScore       Int?     // New field for user's score
+  volumesProgress Int?     // New field for volumes progress
+  chaptersProgress Int?    // New field for chapters progress
+  notes           String?  @db.Text // New field for user's notes
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, malId, itemType])
 }
