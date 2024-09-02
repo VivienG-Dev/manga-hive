@@ -69,12 +69,24 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
   state: () => ({
     searchResults: [] as JikanManga[],
     libraryEntries: [] as LibraryEntry[],
+    pagination: {
+      currentPage: 1,
+      lastVisiblePage: 1,
+      hasNextPage: false,
+    },
   }),
   actions: {
-    async searchManga(query: string) {
+    async searchManga(query: string, page: number = 1) {
       try {
-        const response = await axios.get<{ data: JikanManga[] }>(`https://api.jikan.moe/v4/manga?q=${query}&sfw`)
+        const response = await axios.get<{ data: JikanManga[], pagination: { last_visible_page: number, has_next_page: boolean } }>(
+          `https://api.jikan.moe/v4/manga?q=${query}&page=${page}&limit=15&sfw`
+        )
         this.searchResults = response.data.data
+        this.pagination = {
+          currentPage: page,
+          lastVisiblePage: response.data.pagination.last_visible_page,
+          hasNextPage: response.data.pagination.has_next_page,
+        }
       } catch (error) {
         console.error('Failed to search manga', error)
       }

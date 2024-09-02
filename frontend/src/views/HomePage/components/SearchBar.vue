@@ -15,6 +15,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationLast,
+  PaginationList,
+  PaginationListItem,
+  PaginationNext,
+  PaginationPrev,
+} from '@/components/ui/pagination'
+import {
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -42,10 +52,10 @@ const notes = ref<string>('')
 
 const loading = ref(false)
 
-const handleSearch = async () => {
+const handleSearch = async (page: number = 1) => {
   loading.value = true
   if (searchType.value === 'manga') {
-    await mangaLibraryStore.searchManga(searchQuery.value)
+    await mangaLibraryStore.searchManga(searchQuery.value, page)
   } else if (searchType.value === 'users') {
     // Implement user search logic here
     console.log(`Searching for users: ${searchQuery.value}`)
@@ -139,6 +149,22 @@ const isLoading = computed(() => loading.value && mangaLibraryStore.searchResult
           </Card>
         </template>
       </div>
+      <Pagination v-if="mangaLibraryStore.pagination.lastVisiblePage > 1" class="mt-4 flex justify-center">
+        <PaginationList class="flex items-center gap-1">
+          <PaginationFirst @click="handleSearch(1)" :disabled="mangaLibraryStore.pagination.currentPage === 1"
+            class="bg-white" />
+          <PaginationPrev @click="handleSearch(mangaLibraryStore.pagination.currentPage - 1)"
+            :disabled="mangaLibraryStore.pagination.currentPage === 1" class="bg-white" />
+          <PaginationListItem v-for="page in mangaLibraryStore.pagination.lastVisiblePage" :key="page" :value="page"
+            @click="handleSearch(page)" :active="page === mangaLibraryStore.pagination.currentPage">
+            <Button class="bg-white" variant="outline" size="sm">{{ page }}</Button>
+          </PaginationListItem>
+          <PaginationNext @click="handleSearch(mangaLibraryStore.pagination.currentPage + 1)"
+            :disabled="!mangaLibraryStore.pagination.hasNextPage" class="bg-white" />
+          <PaginationLast @click="handleSearch(mangaLibraryStore.pagination.lastVisiblePage)"
+            :disabled="!mangaLibraryStore.pagination.hasNextPage" class="bg-white" />
+        </PaginationList>
+      </Pagination>
     </div>
 
     <Drawer v-model:open="isDrawerOpen">
