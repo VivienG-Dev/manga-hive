@@ -19,7 +19,7 @@ api.interceptors.request.use(
   }
 )
 
-interface JikanManga {
+export interface JikanManga {
   mal_id: number;
   title: string;
   images: {
@@ -48,9 +48,21 @@ interface LibraryEntry {
   genres: string | null;
   chapters: number | null;
   volumes: number | null;
-  score: number | null;
+  userScore: number | null;
+  volumesProgress: number | null;
+  chaptersProgress: number | null;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+interface AddToLibraryPayload {
+  malId: number;
+  status: LibraryEntry['status'];
+  userScore: number | null;
+  volumesProgress: number | null;
+  chaptersProgress: number | null;
+  notes: string | null;
 }
 
 export const useMangaLibraryStore = defineStore('mangaLibrary', {
@@ -67,15 +79,16 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         console.error('Failed to search manga', error)
       }
     },
-    async addToLibrary(malId: number) {
+    async addToLibrary(payload: AddToLibraryPayload) {
       try {
-        const manga = this.searchResults.find(result => result.mal_id === malId);
+        const manga = this.searchResults.find(result => result.mal_id === payload.malId);
         if (!manga) {
           throw new Error('Manga not found in search results');
         }
         const response = await api.post<LibraryEntry>('/library', {
-          malId,
+          malId: payload.malId,
           itemType: 'MANGA',
+          status: payload.status,
           title: manga.title,
           imageUrl: manga.images.jpg.image_url,
           synopsis: manga.synopsis,
@@ -83,12 +96,15 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
           genres: manga.genres.map(genre => genre.name).join(', '),
           chapters: manga.chapters,
           volumes: manga.volumes,
-          score: manga.score
+          userScore: payload.userScore,
+          volumesProgress: payload.volumesProgress,
+          chaptersProgress: payload.chaptersProgress,
+          notes: payload.notes
         });
         this.libraryEntries.push(response.data);
       } catch (error) {
         console.error('Failed to add item to library', error);
-        throw error; // Re-throw the error so it can be handled by the component
+        throw error;
       }
     },
     async fetchLibrary() {

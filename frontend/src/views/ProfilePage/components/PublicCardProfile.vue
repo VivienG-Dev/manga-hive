@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,6 +19,24 @@ interface UserData {
 const userData = ref<UserData | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
+
+const sortOrder = ref('asc')
+const statusFilter = ref('all')
+
+const filteredAndSortedEntries = computed(() => {
+  if (!userData.value?.libraryEntries) return []
+
+  let filtered = userData.value.libraryEntries
+
+  if (statusFilter.value !== 'all') {
+    filtered = filtered.filter(entry => entry.status.toLowerCase().replace(' ', '_') === statusFilter.value)
+  }
+
+  return filtered.sort((a, b) => {
+    const comparison = a.title.localeCompare(b.title)
+    return sortOrder.value === 'asc' ? comparison : -comparison
+  })
+})
 
 async function loadUserData() {
   const username = route.params.username as string
@@ -73,22 +91,58 @@ watch(
     </Card>
 
     <div v-if="userData.libraryEntries && userData.libraryEntries.length > 0" class="mt-8">
-      <h2 class="text-2xl font-bold mb-4">Library Entries</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <Card v-for="entry in userData.libraryEntries" :key="entry.id" class="bg-white">
-          <CardHeader>
-            <CardTitle>{{ entry.title }}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title" class="w-full h-48 object-cover mb-2" />
-            <p><strong>Type:</strong> {{ entry.itemType }}</p>
-            <p><strong>Status:</strong> {{ entry.status }}</p>
-            <p v-if="entry.authors"><strong>Authors:</strong> {{ entry.authors }}</p>
-            <p v-if="entry.genres"><strong>Genres:</strong> {{ entry.genres }}</p>
-            <p v-if="entry.chapters"><strong>Chapters:</strong> {{ entry.chapters }}</p>
-            <p v-if="entry.volumes"><strong>Volumes:</strong> {{ entry.volumes }}</p>
-            <p v-if="entry.score"><strong>Score:</strong> {{ entry.score }}</p>
-          </CardContent>
+      <h2 class="text-2xl font-bold mb-4">My Library Entries</h2>
+
+      <div class="flex items-center space-x-4 mb-4">
+        <div>
+          <Select v-model="sortOrder" id="sort-order" class="p-2 border rounded">
+            <SelectTrigger class="bg-white">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Sort By</SelectLabel>
+                <SelectItem value="asc">A-Z</SelectItem>
+                <SelectItem value="desc">Z-A</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Select v-model="statusFilter" id="status-filter" class="p-2 border rounded">
+            <SelectTrigger class="bg-white">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Status</SelectLabel>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="reading">Reading</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="on_hold">On Hold</SelectItem>
+                <SelectItem value="dropped">Dropped</SelectItem>
+                <SelectItem value="plan_to_read">Plan to Read</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        <Card v-for="entry in filteredAndSortedEntries" :key="entry.id" class="flex items-center space-x-4 p-2">
+          <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
+            class="w-30 h-40 object-cover rounded-md" />
+          <div class="space-y-4">
+            <CardHeader class="p-0">
+              <CardTitle>{{ entry.title }}</CardTitle>
+            </CardHeader>
+            <CardContent class="p-0">
+              <p><strong>Status:</strong> {{ entry.status }}</p>
+              <p><strong>Chapters:</strong> {{ entry.chapters || 'N/A' }}</p>
+              <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
+              <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
+            </CardContent>
+          </div>
         </Card>
       </div>
     </div>

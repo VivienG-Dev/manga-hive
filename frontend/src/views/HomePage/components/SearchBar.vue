@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import { useMangaLibraryStore } from '@/stores/mangaLibraryStore'
+import { useMangaLibraryStore, type JikanManga } from '@/stores/mangaLibraryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -15,10 +15,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 const searchType = ref('manga')
 const searchQuery = ref('')
 const mangaLibraryStore = useMangaLibraryStore()
+
+// New refs for the drawer
+const isDrawerOpen = ref(false)
+const selectedManga = ref<JikanManga | null>(null)
+const status = ref<'PLAN_TO_READ' | 'READING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED'>('PLAN_TO_READ')
+const userScore = ref<any>(null)
+const volumesProgress = ref<any>(null)
+const chaptersProgress = ref<any>(null)
+const notes = ref<string>('')
 
 const handleSearch = async () => {
   if (searchType.value === 'manga') {
@@ -47,6 +68,31 @@ watch(searchQuery, () => {
     debouncedSearch()
   }
 })
+
+const openDrawer = (manga: JikanManga) => {
+  selectedManga.value = manga
+  isDrawerOpen.value = true
+}
+
+const handleAddToLibrary = () => {
+  if (selectedManga.value) {
+    mangaLibraryStore.addToLibrary({
+      malId: selectedManga.value.mal_id,
+      status: status.value,
+      userScore: userScore.value,
+      volumesProgress: volumesProgress.value,
+      chaptersProgress: chaptersProgress.value,
+      notes: notes.value,
+    })
+  }
+  isDrawerOpen.value = false
+  // Reset form values
+  status.value = 'PLAN_TO_READ'
+  userScore.value = null
+  volumesProgress.value = null
+  chaptersProgress.value = null
+  notes.value = ''
+}
 </script>
 
 <template>
@@ -78,10 +124,73 @@ watch(searchQuery, () => {
           <CardContent>
             <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-48 object-cover mb-2" />
             <p class="text-sm text-gray-600 mb-2">{{ manga.synopsis?.substring(0, 100) }}...</p>
-            <Button @click="mangaLibraryStore.addToLibrary(manga.mal_id)">Add to Library</Button>
+            <Button @click="openDrawer(manga)">Add to Library</Button>
           </CardContent>
         </Card>
       </div>
     </div>
+
+    <Drawer v-model:open="isDrawerOpen">
+      <DrawerContent>
+        <div class="mx-auto w-full max-w-lg">
+          <DrawerHeader>
+            <DrawerTitle>{{ selectedManga?.title }}</DrawerTitle>
+            <DrawerDescription>Fill in the details to add this manga to your library.</DrawerDescription>
+          </DrawerHeader>
+          <div class="p-4">
+            <!-- <img :src="selectedManga?.images.jpg.image_url" :alt="selectedManga?.title"
+              class="w-full h-48 object-cover mb-4" /> -->
+
+            <div class="space-y-4">
+              <div class="flex items-center space-x-8">
+                <div class="w-full">
+                  <Label for="status">Status</Label>
+                  <Select v-model="status">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PLAN_TO_READ">Plan to Read</SelectItem>
+                      <SelectItem value="READING">Reading</SelectItem>
+                      <SelectItem value="COMPLETED">Completed</SelectItem>
+                      <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                      <SelectItem value="DROPPED">Dropped</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="w-full">
+                  <Label for="userScore">Your Score (0-10)</Label>
+                  <Input id="userScore" v-model="userScore" type="number" min="0" max="10" />
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-8">
+                <div class="w-full">
+                  <Label for="volumesProgress">Volumes Progress</Label>
+                  <Input id="volumesProgress" v-model="volumesProgress" type="number" min="0" />
+                </div>
+
+                <div class="w-full">
+                  <Label for="chaptersProgress">Chapters Progress</Label>
+                  <Input id="chaptersProgress" v-model="chaptersProgress" type="number" min="0" />
+                </div>
+              </div>
+
+              <div>
+                <Label for="notes">Notes</Label>
+                <Textarea id="notes" v-model="notes" />
+              </div>
+            </div>
+          </div>
+          <DrawerFooter class="flex flex-row justify-between">
+            <DrawerClose class="w-full">
+              <Button class="w-full" variant="outline">Cancel</Button>
+            </DrawerClose>
+            <Button class="w-full" @click="handleAddToLibrary">Add to Library</Button>
+          </DrawerFooter>
+        </div>
+      </DrawerContent>
+    </Drawer>
   </div>
 </template>
