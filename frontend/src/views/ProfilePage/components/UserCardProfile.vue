@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, watch, computed, TransitionGroup } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -149,22 +148,26 @@ watch(
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card v-for="entry in filteredAndSortedEntries" :key="entry.id" class="flex items-center space-x-4 p-2">
-          <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
-            class="w-30 h-40 object-cover rounded-md" />
-          <div class="space-y-4">
-            <CardHeader class="p-0">
-              <CardTitle>{{ entry.title }}</CardTitle>
-            </CardHeader>
-            <CardContent class="p-0">
-              <p><strong>Status:</strong> {{ entry.status }}</p>
-              <p><strong>Chapters:</strong> {{ entry.chapters || 'N/A' }}</p>
-              <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
-              <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
-            </CardContent>
-          </div>
-        </Card>
+      <div>
+        <TransitionGroup name="fade" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Transition v-for="entry in filteredAndSortedEntries" :key="entry.id" name="fade">
+            <Card class="flex items-center space-x-4 p-2">
+              <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
+                class="w-30 h-40 object-cover rounded-md" />
+              <div class="space-y-4">
+                <CardHeader class="p-0">
+                  <CardTitle>{{ entry.title }}</CardTitle>
+                </CardHeader>
+                <CardContent class="p-0">
+                  <p><strong>Status:</strong> {{ entry.status }}</p>
+                  <p><strong>Chapters:</strong> {{ entry.chapters || 'N/A' }}</p>
+                  <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
+                  <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
+                </CardContent>
+              </div>
+            </Card>
+          </Transition>
+        </TransitionGroup>
       </div>
     </div>
     <div v-else-if="userData.libraryEntries && userData.libraryEntries.length === 0" class="mt-8">
@@ -173,3 +176,15 @@ watch(
   </div>
   <div v-else>User not found</div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
