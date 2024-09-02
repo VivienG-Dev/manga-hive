@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useMangaLibraryStore, type JikanManga } from '@/stores/mangaLibraryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -23,10 +22,10 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { CirclePlus } from 'lucide-vue-next'
 
 const searchType = ref('manga')
 const searchQuery = ref('')
@@ -41,13 +40,17 @@ const volumesProgress = ref<any>(null)
 const chaptersProgress = ref<any>(null)
 const notes = ref<string>('')
 
+const loading = ref(false)
+
 const handleSearch = async () => {
+  loading.value = true
   if (searchType.value === 'manga') {
     await mangaLibraryStore.searchManga(searchQuery.value)
   } else if (searchType.value === 'users') {
     // Implement user search logic here
     console.log(`Searching for users: ${searchQuery.value}`)
   }
+  loading.value = false
 }
 
 // Debounce function to limit API calls
@@ -93,6 +96,8 @@ const handleAddToLibrary = () => {
   chaptersProgress.value = null
   notes.value = ''
 }
+
+const isLoading = computed(() => loading.value && mangaLibraryStore.searchResults.length === 0)
 </script>
 
 <template>
@@ -114,19 +119,25 @@ const handleAddToLibrary = () => {
       <Button @click="handleSearch">Search</Button>
     </div>
 
-    <div v-if="searchType === 'manga' && mangaLibraryStore.searchResults.length > 0">
+    <div v-if="searchType === 'manga'">
       <h2 class="text-xl font-bold mb-2">Search Results</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <Card v-for="manga in mangaLibraryStore.searchResults" :key="manga.mal_id" class="bg-white">
-          <CardHeader>
-            <CardTitle>{{ manga.title }}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-48 object-cover mb-2" />
-            <p class="text-sm text-gray-600 mb-2">{{ manga.synopsis?.substring(0, 100) }}...</p>
-            <Button @click="openDrawer(manga)">Add to Library</Button>
-          </CardContent>
-        </Card>
+        <template v-if="isLoading">
+          <Skeleton v-for="n in 10" :key="n" class="h-64 w-full" />
+        </template>
+        <template v-else>
+          <Card v-for="manga in mangaLibraryStore.searchResults" :key="manga.mal_id" class="p-2 space-y-4">
+            <CardHeader class="relative p-0">
+              <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-64 object-cover rounded-md" />
+              <Button @click="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
+                <CirclePlus class="w-6 h-6" />
+              </Button>
+            </CardHeader>
+            <CardContent class="p-0">
+              <CardTitle>{{ manga.title }}</CardTitle>
+            </CardContent>
+          </Card>
+        </template>
       </div>
     </div>
 
@@ -138,9 +149,6 @@ const handleAddToLibrary = () => {
             <DrawerDescription>Fill in the details to add this manga to your library.</DrawerDescription>
           </DrawerHeader>
           <div class="p-4">
-            <!-- <img :src="selectedManga?.images.jpg.image_url" :alt="selectedManga?.title"
-              class="w-full h-48 object-cover mb-4" /> -->
-
             <div class="space-y-4">
               <div class="flex items-center space-x-8">
                 <div class="w-full">
