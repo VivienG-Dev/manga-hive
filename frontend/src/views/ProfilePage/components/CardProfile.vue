@@ -60,9 +60,7 @@ watch(
   <div v-else-if="error" class="mt-8">{{ error }}</div>
   <div v-else-if="userData" class="mt-8">
     <Card class="h-96 overflow-hidden">
-      <CardHeader
-        class="flex flex-row justify-between items-start h-4/6 bg-cover bg-no-repeat bg-bottom bg-sign-in"
-      >
+      <CardHeader class="flex flex-row justify-between items-start h-4/6 bg-cover bg-no-repeat bg-bottom bg-sign-in">
         <div class="bg-white bg-opacity-60 p-2 rounded-md">
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
@@ -71,11 +69,8 @@ watch(
         </div>
       </CardHeader>
       <CardContent class="relative -top-12 flex flex-col justify-center items-center h-2/6 gap-2">
-        <img
-          :src="userData.imageUrl || 'https://i.pravatar.cc/300'"
-          alt="Profile Picture"
-          class="w-32 h-auto md:w-40 md:h-auto rounded-full border-4 border-white"
-        />
+        <img :src="userData.imageUrl || 'https://i.pravatar.cc/300'" alt="Profile Picture"
+          class="w-32 h-auto md:w-40 md:h-auto rounded-full border-4 border-white" />
         <div class="text-center">
           <h3>{{ userData.username }}</h3>
           <p>{{ userData.libraryEntries?.length }} Library Entries</p>
