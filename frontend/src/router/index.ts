@@ -48,7 +48,18 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  next()
+  // Check if the browser supports View Transitions API
+  // @ts-ignore
+  if (document.startViewTransition) {
+    // @ts-ignore
+    document.startViewTransition(() => {
+      next()
+    })
+  } else {
+    next()
+  }
+
+  // next()
 })
 
 export default router

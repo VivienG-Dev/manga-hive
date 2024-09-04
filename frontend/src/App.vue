@@ -23,13 +23,61 @@ const isAuthPage = computed(() => {
 
 <template>
   <div :class="[isAuthPage ? 'w-full' : 'container mx-auto max-w-screen-xl my-4 md:my-8 px-4']">
-    <NavBar
-      v-if="!isAuthPage"
-      :user="user"
-      :isAuthenticated="isAuthenticated"
-      :mode="{ value: mode }"
-      @update:mode="mode = $event"
-    />
+    <NavBar v-if="!isAuthPage" :user="user" :isAuthenticated="isAuthenticated" :mode="{ value: mode }"
+      @update:mode="mode = $event" />
     <RouterView />
   </div>
 </template>
+
+<style>
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* @keyframes slide-to-right {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+} */
+
+/* @keyframes slide-to-left {
+  from {
+    transform: translateX(-4rem);
+  }
+
+  to {
+    transform: translateX(0rem);
+  }
+} */
+
+::view-transition-old(root) {
+  animation: fade-out 350ms cubic-bezier(0, 0, 0.2, 1),
+    slide-to-right 350ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+::view-transition-new(root) {
+  animation: fade-in 350ms cubic-bezier(0, 0, 0.2, 1),
+    slide-to-left 350ms cubic-bezier(0, 0, 0.2, 1);
+  mix-blend-mode: normal;
+}
+</style>
