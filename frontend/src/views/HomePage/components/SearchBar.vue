@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/select'
 import {
   Pagination,
-  PaginationEllipsis,
   PaginationFirst,
   PaginationLast,
   PaginationList,
@@ -36,6 +35,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { CirclePlus } from 'lucide-vue-next'
+import { useWindowSize } from '@vueuse/core'
 
 const searchType = ref('manga')
 const searchQuery = ref('')
@@ -92,10 +92,10 @@ const handleAddToLibrary = () => {
     mangaLibraryStore.addToLibrary({
       malId: selectedManga.value.mal_id,
       status: status.value,
-      userScore: userScore.value,
-      volumesProgress: volumesProgress.value,
-      chaptersProgress: chaptersProgress.value,
-      notes: notes.value,
+      userScore: userScore.value || 0,
+      volumesProgress: volumesProgress.value || 0,
+      chaptersProgress: chaptersProgress.value || 0,
+      notes: notes.value || '',
     })
   }
   isDrawerOpen.value = false
@@ -108,6 +108,28 @@ const handleAddToLibrary = () => {
 }
 
 const isLoading = computed(() => loading.value && mangaLibraryStore.searchResults.length === 0)
+
+const { width } = useWindowSize()
+
+const visiblePages = computed(() => {
+  const totalPages = mangaLibraryStore.pagination.lastVisiblePage
+  const currentPage = mangaLibraryStore.pagination.currentPage
+  const maxVisible = width.value >= 768 ? 10 : 5
+
+  if (totalPages <= maxVisible) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  const halfVisible = Math.floor(maxVisible / 2)
+  let start = Math.max(currentPage - halfVisible, 1)
+  let end = Math.min(start + maxVisible - 1, totalPages)
+
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(end - maxVisible + 1, 1)
+  }
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+})
 </script>
 
 <template>
@@ -155,9 +177,10 @@ const isLoading = computed(() => loading.value && mangaLibraryStore.searchResult
             class="bg-white" />
           <PaginationPrev @click="handleSearch(mangaLibraryStore.pagination.currentPage - 1)"
             :disabled="mangaLibraryStore.pagination.currentPage === 1" class="bg-white" />
-          <PaginationListItem v-for="page in mangaLibraryStore.pagination.lastVisiblePage" :key="page" :value="page"
-            @click="handleSearch(page)" :active="page === mangaLibraryStore.pagination.currentPage">
-            <Button class="bg-white" variant="outline" size="sm">{{ page }}</Button>
+          <PaginationListItem v-for="page in visiblePages" :key="page" :value="page" @click="handleSearch(page)"
+            :active="page === mangaLibraryStore.pagination.currentPage">
+            <Button :class="page === mangaLibraryStore.pagination.currentPage ? 'bg-primary text-white' : 'bg-white'"
+              variant="outline" size="sm">{{ page }}</Button>
           </PaginationListItem>
           <PaginationNext @click="handleSearch(mangaLibraryStore.pagination.currentPage + 1)"
             :disabled="!mangaLibraryStore.pagination.hasNextPage" class="bg-white" />
