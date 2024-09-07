@@ -37,12 +37,25 @@ const router = createRouter({
       path: '/u/:username',
       name: 'publicProfile',
       component: () => import('@/views/ProfilePage/PublicProfileView.vue')
+    },
+    {
+      path: '/mangas/:mangaid/:mangatitle',
+      name: 'items',
+      component: () => import('@/views/SingleItemPage/index.vue')
     }
-  ]
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else if (to.hash) {
+      return { el: to.hash }
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 router.beforeEach((to, from, next) => {
-  // If the route do not exists, redirect to home
   if (!to.matched.length) {
     next({ name: 'home' })
     return
