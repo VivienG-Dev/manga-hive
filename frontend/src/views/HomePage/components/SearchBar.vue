@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { CirclePlus } from 'lucide-vue-next'
 import { useWindowSize } from '@vueuse/core'
+import { useRouter } from 'vue-router'
 
 const searchType = ref('manga')
 const searchQuery = ref('')
@@ -130,6 +131,12 @@ const visiblePages = computed(() => {
 
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
+
+const router = useRouter()
+
+const goToMangaPage = (manga: JikanManga) => {
+  router.push({ name: 'items', params: { mangaid: manga.mal_id.toString(), mangatitle: manga.title.toString().replace(/ /g, '-') } })
+}
 </script>
 
 <template>
@@ -158,10 +165,12 @@ const visiblePages = computed(() => {
           <Skeleton v-for="n in 10" :key="n" class="h-64 w-full" />
         </template>
         <template v-else>
-          <Card v-for="manga in mangaLibraryStore.searchResults" :key="manga.mal_id" class="p-2 space-y-4">
+          <Card v-for="manga in mangaLibraryStore.searchResults" :key="manga.mal_id" :data-manga-id="manga.mal_id"
+            class="p-2 space-y-4 cursor-pointer" @click="goToMangaPage(manga)">
             <CardHeader class="relative p-0">
-              <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-64 object-cover rounded-md" />
-              <Button @click="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
+              <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-64 object-cover rounded-md"
+                :style="`view-transition-name: card-${manga.mal_id};`" />
+              <Button @click.stop="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
                 <CirclePlus class="w-6 h-6" />
               </Button>
             </CardHeader>
