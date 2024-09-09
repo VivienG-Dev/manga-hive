@@ -50,34 +50,22 @@ const isAuthPage = computed(() => {
   }
 }
 
-/* @keyframes slide-to-right {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(100%);
-  }
-} */
-
-/* @keyframes slide-to-left {
-  from {
-    transform: translateX(-4rem);
-  }
-
-  to {
-    transform: translateX(0rem);
-  }
-} */
-
-::view-transition-old(root) {
+/* ::view-transition-old(root) {
   animation: fade-out 350ms cubic-bezier(0, 0, 0.2, 1),
-    slide-to-right 350ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 ::view-transition-new(root) {
-  animation: fade-in 350ms cubic-bezier(0, 0, 0.2, 1),
-    slide-to-left 350ms cubic-bezier(0, 0, 0.2, 1);
+  animation: fade-in 350ms cubic-bezier(0, 0, 0.2, 1);
+  mix-blend-mode: normal;
+} */
+
+::view-transition-old(root),
+::view-transition-new(root) {
   mix-blend-mode: normal;
 }
+
+/* ::view-transition-old(card-*),
+::view-transition-new(card-*) {
+  mix-blend-mode: normal;
+} */
 </style>
