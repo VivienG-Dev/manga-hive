@@ -22,9 +22,16 @@ api.interceptors.request.use(
 export interface JikanManga {
   mal_id: number;
   title: string;
+  title_japanese: string;
+  title_english: string;
+  published: {
+    from: string;
+    to: string;
+  };
   images: {
     jpg: {
       image_url: string;
+      large_image_url: string;
     };
   };
   synopsis: string;
@@ -33,6 +40,21 @@ export interface JikanManga {
   chapters: number;
   volumes: number;
   score: number;
+  status: string;
+  type: string;
+}
+
+export interface JikanCharacter {
+  character: {
+    mal_id: number;
+    images: {
+      webp: {
+        image_url: string;
+      };
+    };
+    name: string;
+  };
+  role: string;
 }
 
 interface LibraryEntry {
@@ -69,6 +91,7 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
   state: () => ({
     searchResults: [] as JikanManga[],
     libraryEntries: [] as LibraryEntry[],
+    characters: [] as JikanCharacter[],
     pagination: {
       currentPage: 1,
       lastVisiblePage: 1,
@@ -127,5 +150,25 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         console.error('Failed to fetch library', error)
       }
     },
+    async fetchMangaDetails(mangaId: string): Promise<JikanManga> {
+      try {
+        const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/full`)
+        const data = await response.json()
+        return data.data
+      } catch (error) {
+        console.error('Error fetching manga details:', error)
+        throw error
+      }
+    },
+    async fetchMangaCharacters(mangaId: string): Promise<JikanCharacter[]> {
+      try {
+        const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/characters`)
+        const data = await response.json()
+        return data.data
+      } catch (error) {
+        console.error('Error fetching manga characters:', error)
+        throw error
+      }
+    }
   },
 })
