@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMangaLibraryStore, type JikanManga, type JikanCharacter, type JikanImage } from '@/stores/mangaLibraryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 const route = useRoute()
@@ -50,7 +51,7 @@ const formatDate = (dateString: string): string => {
 </script>
 
 <template>
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 space-y-16">
         <div v-if="loading">Loading...</div>
         <div v-else-if="manga" class="flex flex-col md:flex-row gap-8 card-transition-large">
             <div class="md:w-1/3">
@@ -61,64 +62,64 @@ const formatDate = (dateString: string): string => {
             <div class="md:w-2/3">
                 <div>
                     <h1 class="text-3xl font-bold mb-4">{{ manga.title_english }}</h1>
-                    <p class="text-gray-700 mt-4">{{ manga.synopsis }}</p>
+                    <p class="mt-4">{{ manga.synopsis }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Janapese title:</span> {{ manga.title_japanese }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Romaji title:</span> {{ manga.title }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Start date:</span> {{ formatDate(manga.published.from) ?? 'N/A'
                             }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">End date:</span> {{ isDefaultDate(manga.published.to)
                                 ? 'N/A' : formatDate(manga.published.to) }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Status:</span> {{ manga.status }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Genres:</span>
                             {{ manga.genres.map(genre => genre.name).join(', ') }}
                         </CardContent>
                     </Card>
                     <Card class="hidden">
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Score:</span> {{ manga.score }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Chapters:</span> {{ manga.chapters }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Volumes:</span> {{ manga.volumes }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Type:</span> {{ manga.type }}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent class="p-2">
+                        <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold" v-if="manga.authors.length > 1">Authors:</span>
                             <span class="font-semibold" v-else>Author:</span>
                             {{ manga.authors.map(author => formatAuthorName(author.name)).join(', ') }}
@@ -130,34 +131,46 @@ const formatDate = (dateString: string): string => {
         <div v-else>
             <p>Manga not found</p>
         </div>
+
         <div v-if="characters.length > 0">
             <h2 class="text-2xl font-bold mb-4">Characters</h2>
-            <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-7 gap-4">
-                <div v-for="character in mainCharacters" :key="character.character.mal_id"
-                    class="flex flex-col items-center">
-                    <img :src="character.character.images.webp.image_url" :alt="character.character.name"
-                        class="w-32 h-auto object-cover rounded-lg shadow-lg mb-2" />
-                    <span class="text-center font-semibold">{{ character.character.name }}</span>
-                    <span class="text-center text-sm text-gray-600">{{ character.role }}</span>
-                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <Card v-for="character in mainCharacters" :key="character.character.mal_id" class="flex flex-row">
+                    <CardContent class="p-2">
+                        <img :src="character.character.images.webp.image_url" :alt="character.character.name"
+                            class="w-auto h-28 object-cover rounded-md" />
+                    </CardContent>
+                    <CardContent class="flex flex-col justify-around items-left p-2">
+                        <span class="font-semibold">{{ character.character.name }}</span>
+                        <span class="text-sm text-gray-600">
+                            <Badge>{{ character.role }}</Badge>
+                        </span>
+                    </CardContent>
+                </Card>
             </div>
             <div v-if="showAllCharacters">
-                <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-7 gap-4 mt-4">
-                    <div v-for="character in otherCharacters" :key="character.character.mal_id"
-                        class="flex flex-col items-center">
-                        <img :src="character.character.images.webp.image_url" :alt="character.character.name"
-                            class="w-32 h-auto object-cover rounded-lg shadow-lg mb-2" />
-                        <span class="text-center font-semibold">{{ character.character.name }}</span>
-                        <span class="text-center text-sm text-gray-600">{{ character.role }}</span>
-                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                    <Card v-for="character in otherCharacters" :key="character.character.mal_id" class="flex flex-row">
+                        <CardContent class="p-2">
+                            <img :src="character.character.images.webp.image_url" :alt="character.character.name"
+                                class="w-auto h-28 object-cover rounded-md" />
+                        </CardContent>
+                        <CardContent class="flex flex-col justify-around items-left p-2">
+                            <span class="font-semibold">{{ character.character.name }}</span>
+                            <span class="text-sm text-gray-600">
+                                <Badge>{{ character.role }}</Badge>
+                            </span>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
-            <div class="mt-4">
-                <Button @click="toggleCharacters">
-                    {{ showAllCharacters ? 'Hide' : 'More' }} Characters
-                </Button>
-            </div>
         </div>
+        <div class="mt-4">
+            <Button @click="toggleCharacters">
+                {{ showAllCharacters ? 'Hide' : 'More' }} Characters
+            </Button>
+        </div>
+
         <div v-if="images.length > 0">
             <h2 class="text-2xl font-bold mb-4">Images</h2>
             <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-2 gap-4">
