@@ -57,6 +57,19 @@ export interface JikanCharacter {
   role: string;
 }
 
+export interface JikanImage {
+  jpg: {
+    image_url: string,
+    small_image_url: string,
+    large_image_url: string
+  },
+  webp: {
+    image_url: string,
+    small_image_url: string,
+    large_image_url: string
+  }
+}
+
 interface LibraryEntry {
   id: number;
   userId: number;
@@ -92,6 +105,7 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
     searchResults: [] as JikanManga[],
     libraryEntries: [] as LibraryEntry[],
     characters: [] as JikanCharacter[],
+    images: [] as JikanImage[],
     pagination: {
       currentPage: 1,
       lastVisiblePage: 1,
@@ -167,6 +181,16 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         return data.data
       } catch (error) {
         console.error('Error fetching manga characters:', error)
+        throw error
+      }
+    },
+    async fetchMangaImages(mangaId: string): Promise<JikanImage[]> {
+      try {
+        const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/pictures`)
+        const data = await response.json()
+        return data.data
+      } catch (error) {
+        console.error('Error fetching manga images:', error)
         throw error
       }
     }
