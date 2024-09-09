@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useMangaLibraryStore, type JikanManga, type JikanCharacter } from '@/stores/mangaLibraryStore'
+import { useMangaLibraryStore, type JikanManga, type JikanCharacter, type JikanImage } from '@/stores/mangaLibraryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -9,13 +9,23 @@ const route = useRoute()
 const mangaLibraryStore = useMangaLibraryStore()
 const manga = ref<JikanManga | null>(null)
 const characters = ref<JikanCharacter[]>([])
+const images = ref<JikanImage[]>([])
 const loading = ref(true)
+
+const showAllCharacters = ref(false)
+const mainCharacters = computed(() => characters.value.filter(char => char.role === 'Main'))
+const otherCharacters = computed(() => characters.value.filter(char => char.role !== 'Main'))
+
+const toggleCharacters = () => {
+    showAllCharacters.value = !showAllCharacters.value
+}
 
 onMounted(async () => {
     const mangaId = route.params.mangaid as string
     try {
         manga.value = await mangaLibraryStore.fetchMangaDetails(mangaId)
         characters.value = await mangaLibraryStore.fetchMangaCharacters(mangaId)
+        images.value = await mangaLibraryStore.fetchMangaImages(mangaId)
     } catch (error) {
         console.error('Error fetching manga details:', error)
     } finally {
@@ -49,45 +59,72 @@ const formatDate = (dateString: string): string => {
                 <Button>Add to list</Button>
             </div>
             <div class="md:w-2/3">
-                <h1 class="text-3xl font-bold mb-4">{{ manga.title_english }}</h1>
-                <div class="mb-4">
-                    <span class="font-semibold">Janapese title:</span> {{ manga.title_japanese }}
+                <div>
+                    <h1 class="text-3xl font-bold mb-4">{{ manga.title_english }}</h1>
+                    <p class="text-gray-700 mt-4">{{ manga.synopsis }}</p>
                 </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Romaji title:</span> {{ manga.title }}
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Janapese title:</span> {{ manga.title_japanese }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Romaji title:</span> {{ manga.title }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Start date:</span> {{ formatDate(manga.published.from) ?? 'N/A'
+                            }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">End date:</span> {{ isDefaultDate(manga.published.to)
+                                ? 'N/A' : formatDate(manga.published.to) }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Status:</span> {{ manga.status }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Genres:</span>
+                            {{ manga.genres.map(genre => genre.name).join(', ') }}
+                        </CardContent>
+                    </Card>
+                    <Card class="hidden">
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Score:</span> {{ manga.score }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Chapters:</span> {{ manga.chapters }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Volumes:</span> {{ manga.volumes }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold">Type:</span> {{ manga.type }}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent class="p-2">
+                            <span class="font-semibold" v-if="manga.authors.length > 1">Authors:</span>
+                            <span class="font-semibold" v-else>Author:</span>
+                            {{ manga.authors.map(author => formatAuthorName(author.name)).join(', ') }}
+                        </CardContent>
+                    </Card>
                 </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Status:</span> {{ manga.status }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Start date:</span> {{ formatDate(manga.published.from) ?? 'N/A' }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">End date:</span> {{ isDefaultDate(manga.published.to)
-                        ? 'N/A' : formatDate(manga.published.to) }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Genres:</span>
-                    {{ manga.genres.map(genre => genre.name).join(', ') }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Score:</span> {{ manga.score }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Chapters:</span> {{ manga.chapters }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Volumes:</span> {{ manga.volumes }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold">Type:</span> {{ manga.type }}
-                </div>
-                <div class="mb-4">
-                    <span class="font-semibold" v-if="manga.authors.length > 1">Authors:</span>
-                    <span class="font-semibold" v-else>Author:</span>
-                    {{ manga.authors.map(author => formatAuthorName(author.name)).join(', ') }}
-                </div>
-                <p class="text-gray-700">{{ manga.synopsis }}</p>
             </div>
         </div>
         <div v-else>
@@ -96,12 +133,37 @@ const formatDate = (dateString: string): string => {
         <div v-if="characters.length > 0">
             <h2 class="text-2xl font-bold mb-4">Characters</h2>
             <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-7 gap-4">
-                <div v-for="character in characters" :key="character.character.mal_id"
+                <div v-for="character in mainCharacters" :key="character.character.mal_id"
                     class="flex flex-col items-center">
                     <img :src="character.character.images.webp.image_url" :alt="character.character.name"
                         class="w-32 h-auto object-cover rounded-lg shadow-lg mb-2" />
                     <span class="text-center font-semibold">{{ character.character.name }}</span>
                     <span class="text-center text-sm text-gray-600">{{ character.role }}</span>
+                </div>
+            </div>
+            <div v-if="showAllCharacters">
+                <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-7 gap-4 mt-4">
+                    <div v-for="character in otherCharacters" :key="character.character.mal_id"
+                        class="flex flex-col items-center">
+                        <img :src="character.character.images.webp.image_url" :alt="character.character.name"
+                            class="w-32 h-auto object-cover rounded-lg shadow-lg mb-2" />
+                        <span class="text-center font-semibold">{{ character.character.name }}</span>
+                        <span class="text-center text-sm text-gray-600">{{ character.role }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <Button @click="toggleCharacters">
+                    {{ showAllCharacters ? 'Hide' : 'More' }} Characters
+                </Button>
+            </div>
+        </div>
+        <div v-if="images.length > 0">
+            <h2 class="text-2xl font-bold mb-4">Images</h2>
+            <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-2 gap-4">
+                <div v-for="image in images" :key="image.jpg.image_url" class="flex flex-col items-center">
+                    <img :src="image.jpg.large_image_url"
+                        class="w-full h-auto object-cover rounded-lg shadow-lg mb-2" />
                 </div>
             </div>
         </div>
