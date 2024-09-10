@@ -4,8 +4,8 @@ import SearchBar from './components/SearchBar.vue'
 </script>
 
 <template>
-  <TheWelcome />
-  <div class="my-8">
+  <div class="container mx-auto px-4 py-8 space-y-16 my-8">
+    <TheWelcome />
     <SearchBar />
   </div>
 </template>
