@@ -29,7 +29,7 @@ api.interceptors.response.use(
         // This is a login request, don't try to refresh token
         return Promise.reject(error);
       }
-      
+
       originalRequest._retry = true;
       try {
         const authStore = useAuthStore();
@@ -53,7 +53,9 @@ interface User {
   id: number
   email: string
   username: string
-  imageUrl?: string
+  avatarUrl?: string
+  backgroundImageUrl?: string
+  private: boolean
   libraryEntries?: any[]
 }
 
