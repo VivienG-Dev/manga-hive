@@ -21,7 +21,10 @@ export class UserDto {
   username: string;
 
   @IsString()
-  imageUrl: string;
+  avatarUrl: string;
+
+  @IsString()
+  backgroundImageUrl: string;
 
   @IsBoolean()
   private: boolean;
