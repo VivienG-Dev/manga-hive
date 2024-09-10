@@ -88,6 +88,23 @@ watch(
     }
   }
 )
+
+const formatStatus = (status: string) => {
+  switch (status) {
+    case 'READING':
+      return 'Reading'
+    case 'COMPLETED':
+      return 'Completed'
+    case 'ON_HOLD':
+      return 'On Hold'
+    case 'DROPPED':
+      return 'Dropped'
+    case 'PLAN_TO_READ':
+      return 'Plan to Read'
+    default:
+      return 'Unknown'
+  }
+}
 </script>
 
 <template>
@@ -164,7 +181,7 @@ watch(
                   <CardTitle>{{ entry.title }}</CardTitle>
                 </CardHeader>
                 <CardContent class="p-0">
-                  <p><strong>Status:</strong> {{ entry.status }}</p>
+                  <p><strong>Status:</strong> {{ formatStatus(entry.status) }}</p>
                   <p><strong>Chapters:</strong> {{ entry.chapters || 'N/A' }}</p>
                   <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
                   <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
