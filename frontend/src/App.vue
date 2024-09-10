@@ -22,7 +22,7 @@ const isAuthPage = computed(() => {
 </script>
 
 <template>
-  <div :class="[isAuthPage ? 'w-full' : 'container mx-auto max-w-screen-xl my-4 md:my-8 px-4']">
+  <div :class="[isAuthPage ? 'w-full' : 'container-full']">
     <NavBar v-if="!isAuthPage" :user="user" :isAuthenticated="isAuthenticated" :mode="{ value: mode }"
       @update:mode="mode = $event" />
     <RouterView />
