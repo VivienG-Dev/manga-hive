@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findOne(id: number, requestingUserId?: number) {
     const user = await this.prisma.user.findUnique({
@@ -78,7 +78,7 @@ export class UsersService {
   }
 
   async update(id: number, body: Partial<UserDto>) {
-    const updateData: any = {};
+    const updateData: Partial<UserDto> = {};
 
     if (body.username !== undefined) {
       updateData.username = body.username;
@@ -88,8 +88,12 @@ export class UsersService {
       updateData.password = await bcrypt.hash(body.password, 10);
     }
 
-    if (body.imageUrl !== undefined) {
-      updateData.imageUrl = body.imageUrl;
+    if (body.avatarUrl !== undefined) {
+      updateData.avatarUrl = body.avatarUrl;
+    }
+
+    if (body.backgroundImageUrl !== undefined) {
+      updateData.backgroundImageUrl = body.backgroundImageUrl;
     }
 
     if (body.private !== undefined) {
