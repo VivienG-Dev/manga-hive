@@ -80,10 +80,9 @@ const logout = async () => {
               <RouterLink v-if="isAuthenticated" to="/profile">
                 <DropdownMenuItem class="cursor-pointer"> Profile </DropdownMenuItem>
               </RouterLink>
-              <DropdownMenuItem>
-                <span>Settings</span>
-                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-              </DropdownMenuItem>
+              <RouterLink v-if="isAuthenticated" to="/settings">
+                <DropdownMenuItem class="cursor-pointer"> Settings </DropdownMenuItem>
+              </RouterLink>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled>

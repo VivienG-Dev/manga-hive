@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed, TransitionGroup } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -98,7 +100,9 @@ watch(
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
         <div v-if="authStore.isAuthenticated && authStore.user?.id === userData.id">
-          <button class="bg-white bg-opacity-60 p-2 rounded-md">Edit Profile</button>
+          <RouterLink to="/settings">
+            <Button variant="outline" class="bg-white bg-opacity-60 p-2 rounded-md">Settings</Button>
+          </RouterLink>
         </div>
       </CardHeader>
       <CardContent class="relative -top-12 flex flex-col justify-center items-center h-2/6 gap-2">
@@ -154,6 +158,7 @@ watch(
             <Card class="flex items-center space-x-4 p-2">
               <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
                 class="w-30 h-40 object-cover rounded-md" />
+              <Skeleton v-else class="h-64 w-full" />
               <div class="space-y-4">
                 <CardHeader class="p-0">
                   <CardTitle>{{ entry.title }}</CardTitle>
