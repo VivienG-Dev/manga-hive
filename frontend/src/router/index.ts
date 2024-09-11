@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomePage/HomeView.vue'
+import SettingsLayout from '@/views/SettingsPage/layout/SettingsLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,9 +36,20 @@ const router = createRouter({
     },
     {
       path: '/settings',
-      name: 'settings',
-      component: () => import('@/views/SettingsPage/ProfileView.vue'),
-      meta: { requiresAuth: true }
+      component: SettingsLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'settings.profile',
+          component: () => import('@/views/SettingsPage/components/ProfileForm.vue')
+        },
+        {
+          path: 'account',
+          name: 'settings.account',
+          component: () => import('@/views/SettingsPage/components/AccountForm.vue')
+        }
+      ]
     },
     {
       path: '/u/:username',
