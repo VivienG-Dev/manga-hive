@@ -1,6 +1,23 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import SidebarNav from '@/views/SettingsPage/components/SideBar.vue'
-import Separator from '@/components/ui/separator/Separator.vue';
+import Separator from '@/components/ui/separator/Separator.vue'
+import ProfileForm from '@/views/SettingsPage/components/ProfileForm.vue'
+import AccountForm from '@/views/SettingsPage/components/AccountForm.vue'
+
+const route = useRoute()
+
+const currentComponent = computed(() => {
+    switch (route.name) {
+        case 'settings.profile':
+            return ProfileForm
+        case 'settings.account':
+            return AccountForm
+        default:
+            return ProfileForm
+    }
+})
 </script>
 
 <template>
@@ -16,7 +33,7 @@ import Separator from '@/components/ui/separator/Separator.vue';
             </aside>
             <div class="flex-1 lg:max-w-2xl">
                 <div class="space-y-6">
-                    <slot />
+                    <component :is="currentComponent" />
                 </div>
             </div>
         </div>
