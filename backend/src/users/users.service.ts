@@ -106,6 +106,13 @@ export class UsersService {
     });
   }
 
+  async uploadFile(id: number, fieldName: 'avatarUrl' | 'backgroundImageUrl', fileUrl: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { [fieldName]: fileUrl },
+    });
+  }
+
   async remove(id: number) {
     return this.prisma.user.delete({
       where: {
