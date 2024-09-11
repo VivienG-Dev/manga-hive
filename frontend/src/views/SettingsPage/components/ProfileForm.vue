@@ -12,31 +12,30 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toast'
+import { Cropper } from 'vue-advanced-cropper'
+import 'vue-advanced-cropper/dist/style.css'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const { toast } = useToast()
 
 const profileFormSchema = toTypedSchema(z.object({
-    password: z.string()
-        .min(1, 'Password is required')
-        .min(8, 'Password must be at least 8 characters long')
-        .max(20, 'Password must not exceed 20 characters')
-        .refine((val) => /[A-Za-z]/.test(val), 'Password must contain at least one letter')
-        .refine((val) => /\d/.test(val), 'Password must contain at least one number')
+    avatarUrl: z.string().url().nullable().optional()
         .refine(
-            (val) => /[@$!%*#?&]/.test(val),
-            'Password must contain at least one special character (@$!%*#?&)'
-        ).optional().or(z.literal('')),
-    avatarUrl: z.string().url().nullable().optional(),
-    backgroundImageUrl: z.string().url().nullable().optional(),
+            (url) => !url || url.match(/\.(jpeg|jpg|png|webp)$/i),
+            'Avatar must be a valid image URL (JPEG, JPG, PNG, WEBP)'
+        ),
+    backgroundImageUrl: z.string().url().nullable().optional()
+        .refine(
+            (url) => !url || url.match(/\.(jpeg|jpg|png|webp)$/i),
+            'Background image must be a valid image URL (JPEG, JPG, PNG, WEBP)'
+        ),
     private: z.boolean(),
 }))
 
 const { handleSubmit, values, setFieldValue } = useForm({
     validationSchema: profileFormSchema,
     initialValues: {
-        password: '',
         avatarUrl: authStore.user?.avatarUrl || null,
         backgroundImageUrl: authStore.user?.backgroundImageUrl || null,
         private: authStore.user?.private ?? true,
@@ -53,8 +52,7 @@ watch(() => authStore.user, (newData) => {
 }, { deep: true })
 
 const hasChanges = computed(() => {
-    return values.password !== '' ||
-        values.avatarUrl !== authStore.user?.avatarUrl ||
+    return values.avatarUrl !== authStore.user?.avatarUrl ||
         values.backgroundImageUrl !== authStore.user?.backgroundImageUrl ||
         values.private !== authStore.user?.private
 })
@@ -70,9 +68,6 @@ const onSubmit = handleSubmit(async (values) => {
 
     const changedValues: Partial<typeof values> = {}
 
-    if (values.password !== '') {
-        changedValues.password = values.password
-    }
     if (values.avatarUrl !== authStore.user?.avatarUrl) {
         changedValues.avatarUrl = values.avatarUrl || null
     }
@@ -86,8 +81,6 @@ const onSubmit = handleSubmit(async (values) => {
     if (Object.keys(changedValues).length > 0) {
         try {
             await userStore.updateProfile(changedValues)
-            // Reset the password field after successful update
-            setFieldValue('password', '')
             toast({
                 title: 'Profile updated',
                 description: 'Your profile has been successfully updated.',
@@ -105,6 +98,96 @@ const onSubmit = handleSubmit(async (values) => {
 const togglePrivate = () => {
     setFieldValue('private', !values.private)
 }
+
+const avatarInputRef = ref<HTMLInputElement | null>(null)
+const backgroundInputRef = ref<HTMLInputElement | null>(null)
+
+const showAvatarCropper = ref(false)
+const showBackgroundCropper = ref(false)
+const avatarImage = ref('')
+const backgroundImage = ref('')
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FORMATS = ['image/jpeg', 'image/png', 'image/webp'];
+
+const handleFileChange = (event: Event, fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (file) {
+        if (file.size > MAX_FILE_SIZE) {
+            toast({
+                title: 'File too large',
+                description: 'Please select an image smaller than 10MB.',
+                variant: 'destructive',
+            })
+            return
+        }
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+            toast({
+                title: 'Invalid file type',
+                description: 'Please select a JPEG, PNG, or WEBP image.',
+                variant: 'destructive',
+            })
+            return
+        }
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            if (fieldName === 'avatarUrl') {
+                avatarImage.value = e.target?.result as string
+                showAvatarCropper.value = true
+            } else {
+                backgroundImage.value = e.target?.result as string
+                showBackgroundCropper.value = true
+            }
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const cropImage = async (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
+    const cropper = fieldName === 'avatarUrl' ? avatarCropperRef.value : backgroundCropperRef.value
+    // @ts-ignore
+    const { canvas } = cropper.getResult()
+    canvas.toBlob(async (blob: Blob) => {
+        if (blob) {
+            try {
+                const file = new File([blob], `${fieldName}.jpg`, { type: 'image/jpeg' })
+                const url = await userStore.uploadFile(file, fieldName)
+                setFieldValue(fieldName, url)
+                toast({
+                    title: 'File uploaded',
+                    description: 'Your image has been uploaded successfully.',
+                })
+                closeCropper(fieldName)
+            } catch (error) {
+                console.error('Error uploading file:', error)
+                toast({
+                    title: 'Upload failed',
+                    description: 'Failed to upload the file. Please try again.',
+                    variant: 'destructive',
+                })
+            }
+        }
+    }, 'image/jpeg')
+}
+
+const avatarCropperRef = ref(null)
+const backgroundCropperRef = ref(null)
+
+const closeCropper = (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
+    if (fieldName === 'avatarUrl') {
+        showAvatarCropper.value = false
+        avatarImage.value = ''
+        if (avatarInputRef.value) {
+            avatarInputRef.value.value = ''
+        }
+    } else {
+        showBackgroundCropper.value = false
+        backgroundImage.value = ''
+        if (backgroundInputRef.value) {
+            backgroundInputRef.value.value = ''
+        }
+    }
+}
 </script>
 
 <template>
@@ -119,40 +202,31 @@ const togglePrivate = () => {
     </div>
     <Separator />
     <form class="space-y-8" @submit="onSubmit">
-        <FormField v-slot="{ componentField }" name="password">
+        <FormField name="avatarUrl">
             <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Profile Image</FormLabel>
                 <FormControl>
-                    <Input type="password" placeholder="New password" v-bind="componentField" />
-                </FormControl>
-                <FormDescription>
-                    Leave blank if you don't want to change your password.
-                </FormDescription>
-                <FormMessage />
-            </FormItem>
-        </FormField>
-
-        <FormField v-slot="{ componentField }" name="avatarUrl">
-            <FormItem>
-                <FormLabel>Profile Image URL</FormLabel>
-                <FormControl>
-                    <Input type="url" placeholder="https://example.com/image.jpg" v-bind="componentField" />
+                    <img :src="authStore.user?.avatarUrl" alt="User avatar" class="rounded-md">
+                    <Input ref="avatarInputRef" type="file" class="cursor-pointer"
+                        @change="(e: Event) => handleFileChange(e, 'avatarUrl')" />
                 </FormControl>
                 <FormMessage />
             </FormItem>
         </FormField>
 
-        <FormField v-slot="{ componentField }" name="backgroundImageUrl">
+        <FormField name="backgroundImageUrl">
             <FormItem>
-                <FormLabel>Background Image URL</FormLabel>
+                <FormLabel>Background Image</FormLabel>
                 <FormControl>
-                    <Input type="url" placeholder="https://example.com/background.jpg" v-bind="componentField" />
+                    <img :src="authStore.user?.backgroundImageUrl" alt="User avatar" class="rounded-md">
+                    <Input ref="backgroundInputRef" type="file" class="cursor-pointer"
+                        @change="(e: Event) => handleFileChange(e, 'backgroundImageUrl')" />
                 </FormControl>
                 <FormMessage />
             </FormItem>
         </FormField>
 
-        <FormField v-slot="{ field }" name="private">
+        <FormField name="private">
             <FormItem class="flex flex-row items-center justify-between rounded-lg border p-4 bg-white">
                 <div class="space-y-0.5">
                     <FormLabel class="text-base">
@@ -169,6 +243,38 @@ const togglePrivate = () => {
             </FormItem>
         </FormField>
 
+        <!-- Avatar Cropper -->
+        <div v-if="showAvatarCropper"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-4 rounded-md max-w-[90vw] md:max-w-[70vw] max-h-[90vh] flex flex-col">
+                <div class="overflow-auto flex-grow">
+                    <Cropper ref="avatarCropperRef" :src="avatarImage" :stencil-props="{
+                        aspectRatio: 1
+                    }" :auto-zoom="true" class="max-h-[70vh]" />
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <Button @click="cropImage('avatarUrl')">Crop and Upload</Button>
+                    <Button @click="closeCropper('avatarUrl')" variant="outline">Cancel</Button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Background Cropper -->
+        <div v-if="showBackgroundCropper"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-4 rounded-md max-w-[70vw] max-h-[90vh] flex flex-col">
+                <div class="overflow-auto flex-grow">
+                    <Cropper ref="backgroundCropperRef" :src="backgroundImage" :stencil-props="{
+                        aspectRatio: 16 / 9
+                    }" :auto-zoom="true" class="max-h-[70vh]" />
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <Button @click="cropImage('backgroundImageUrl')">Crop and Upload</Button>
+                    <Button @click="closeCropper('backgroundImageUrl')" variant="outline">Cancel</Button>
+                </div>
+            </div>
+        </div>
+
         <div class="flex gap-2 justify-start">
             <Button type="submit">
                 Update profile
@@ -176,3 +282,10 @@ const togglePrivate = () => {
         </div>
     </form>
 </template>
+
+<style scoped>
+.cropper-container {
+    max-width: 70vw;
+    max-height: 40vh;
+}
+</style>
