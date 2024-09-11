@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { computed } from 'vue'
 
 interface Item {
     title: string
     href: string
 }
 
-const $route = useRoute()
+const route = useRoute()
 
 const sidebarNavItems: Item[] = [
     {
@@ -18,21 +17,27 @@ const sidebarNavItems: Item[] = [
     {
         title: 'Account',
         href: '/settings/account',
-    },
-    {
-        title: 'Appearance',
-        href: '/settings/appearance',
     }
 ]
+
+const isActive = computed(() => (href: string) => {
+    if (href === '/settings') {
+        return route.path === href
+    }
+    return route.path === href
+})
 </script>
 
 <template>
     <nav class="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
-        <Button v-for="item in sidebarNavItems" :key="item.title" as="a" :href="item.href" variant="ghost" :class="cn(
-            'w-full text-left justify-start',
-            $route.path === `${item.href}` && 'bg-muted hover:bg-muted',
-        )">
-            {{ item.title }}
-        </Button>
+        <router-link v-for="item in sidebarNavItems" :key="item.title" :to="item.href" custom v-slot="{ navigate }">
+            <button @click="navigate" class="w-full text-left justify-start px-3 py-2 rounded-md" :class="[
+                isActive(item.href)
+                    ? 'bg-muted text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-primary'
+            ]">
+                {{ item.title }}
+            </button>
+        </router-link>
     </nav>
 </template>
