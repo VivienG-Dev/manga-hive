@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed, TransitionGroup } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
+import { useMangaLibraryStore } from '@/stores/mangaLibraryStore'
 import type { UserData } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,6 +19,7 @@ import {
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const mangaLibraryStore = useMangaLibraryStore()
 
 const userData = ref<UserData | null>(null)
 const loading = ref(true)
@@ -97,6 +99,10 @@ const formatStatus = (status: string) => {
     default:
       return 'Unknown'
   }
+}
+
+const removeFromLibrary = async (id: number) => {
+  await mangaLibraryStore.removeItemFromLibrary(id)
 }
 </script>
 
@@ -180,6 +186,7 @@ const formatStatus = (status: string) => {
                   <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
                   <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
                 </CardContent>
+                <Button @click="removeFromLibrary(11)">Remove</Button>
               </div>
             </Card>
           </Transition>

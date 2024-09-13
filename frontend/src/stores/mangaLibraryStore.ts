@@ -164,6 +164,14 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         console.error('Failed to fetch library', error)
       }
     },
+    async removeItemFromLibrary(id: number) {
+      try {
+        await api.delete('/library', { data: { id } });
+        this.libraryEntries = this.libraryEntries.filter(entry => entry.id !== id);
+      } catch (error) {
+        console.error('Failed to delete the item from library', error);
+      }
+    },
     async fetchMangaDetails(mangaId: string): Promise<JikanManga> {
       try {
         const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/full`)
@@ -193,6 +201,6 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         console.error('Error fetching manga images:', error)
         throw error
       }
-    }
+    },
   },
 })
