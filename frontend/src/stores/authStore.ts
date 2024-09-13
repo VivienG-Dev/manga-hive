@@ -40,7 +40,6 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // If refresh fails, logout the user
         const authStore = useAuthStore();
         await authStore.logout();
         return Promise.reject(refreshError);
@@ -49,16 +48,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-interface User {
-  id: number
-  email: string
-  username: string
-  avatarUrl?: string | null;
-  backgroundImageUrl?: string | null;
-  private: boolean
-  libraryEntries?: any[]
-}
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -76,8 +65,6 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('Error refreshing token:', error)
         this.isAuthenticated = false
-        // this.user = null
-        // Handle error (e.g., redirect to login page)
       }
     },
     async login(email: string, password: string) {
@@ -110,14 +97,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         await api.post('/auth/logout')
         localStorage.removeItem('accessToken')
-        // this.user = null
         this.isAuthenticated = false
       } catch (error) {
         console.error('Logout failed:', error)
       }
     },
     async checkAuthStatus() {
-      this.isLoading = true; // Set loading to true
+      this.isLoading = true;
       const token = localStorage.getItem('accessToken');
       if (token) {
         try {
@@ -132,13 +118,11 @@ export const useAuthStore = defineStore('auth', {
         } catch (error) {
           console.error('Error checking auth status:', error);
           this.isAuthenticated = false;
-          // this.user = null;
         }
       } else {
         this.isAuthenticated = false;
-        // this.user = null;
       }
-      this.isLoading = false; // Set loading to false when done
+      this.isLoading = false;
     },
   }
 })
