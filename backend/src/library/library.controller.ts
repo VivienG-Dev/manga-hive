@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, UseGuards, Req, Version, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, UseGuards, Req, Version, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LibraryService } from './library.service';
 import { Status, ItemType } from '@prisma/client';
@@ -43,5 +43,19 @@ export class LibraryController {
   @Delete()
   removeFromLibrary(@Body('id') id: number) {
     return this.libraryService.removeFromLibrary(id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Version('1')
+  @Put()
+  updateLibraryEntry(@Body() data: {
+    id: number;
+    status: Status;
+    userScore: number;
+    volumesProgress: number;
+    chaptersProgress: number;
+    notes: string;
+  }) {
+    return this.libraryService.updateLibraryEntry(data.id, data);
   }
 }

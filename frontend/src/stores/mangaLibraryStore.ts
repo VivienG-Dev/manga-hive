@@ -156,6 +156,18 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         throw error;
       }
     },
+    async updateLibraryEntry(id: number, payload: Partial<LibraryEntry>) {
+      try {
+        const response = await api.put<LibraryEntry>(`/library/${id}`, payload);
+        const index = this.libraryEntries.findIndex(entry => entry.id === id);
+        if (index !== -1) {
+          this.libraryEntries[index] = response.data;
+        }
+      } catch (error) {
+        console.error('Failed to update library entry', error);
+        throw error;
+      }
+    },
     async fetchLibrary() {
       try {
         const response = await api.get<LibraryEntry[]>('/library')

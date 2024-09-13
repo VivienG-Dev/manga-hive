@@ -49,6 +49,19 @@ export class LibraryService {
     });
   }
 
+  async updateLibraryEntry(id: number, data: {
+    status: Status;
+    userScore: number;
+    volumesProgress: number;
+    chaptersProgress: number;
+    notes: string;
+  }) {
+    return this.prisma.libraryEntry.update({
+      where: { id },
+      data,
+    });
+  }
+
   async removeFromLibrary(id: number) {
     await this.prisma.libraryEntry.delete({
       where: {
