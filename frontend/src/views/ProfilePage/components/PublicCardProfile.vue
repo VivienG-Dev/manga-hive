@@ -2,18 +2,31 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { useUserStore } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
 interface UserData {
   id: number
+  email: string
   username: string
-  email?: string
-  avatarUrl?: string
-  backgroundImageUrl?: string
+  avatarUrl?: string | null;
+  backgroundImageUrl?: string | null;
+  private: boolean
   libraryEntries?: any[]
 }
 
@@ -45,7 +58,7 @@ async function loadUserData() {
   error.value = null
 
   try {
-    userData.value = await authStore.fetchPublicProfile(username)
+    userData.value = await userStore.fetchPublicProfile(username)
   } catch (e: any) {
     console.error('Error fetching user profile:', e)
     error.value = e.response?.data?.message || 'Failed to load user profile'
@@ -78,7 +91,7 @@ watch(
         <div class="bg-white bg-opacity-60 p-2 rounded-md">
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
-        <div v-if="authStore.isAuthenticated && authStore.user?.id === userData.id">
+        <div v-if="authStore.isAuthenticated && userStore.user?.id === userData.id">
           <RouterLink to="/settings">
             <Button variant="outline" class="bg-white bg-opacity-60 p-2 rounded-md">Settings</Button>
           </RouterLink>
