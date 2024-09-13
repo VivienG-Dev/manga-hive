@@ -2,13 +2,16 @@
 import { RouterView, useRoute } from 'vue-router'
 import { onMounted, computed } from 'vue'
 import { useAuthStore } from './stores/authStore'
+import { useUserStore } from './stores/userStore'
 import { storeToRefs } from 'pinia'
 import { useColorMode } from '@vueuse/core'
 import NavBar from './components/MainNavbar.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const { user, isAuthenticated } = storeToRefs(authStore)
+const userStore = useUserStore()
+const { isAuthenticated } = storeToRefs(authStore)
+const { user } = storeToRefs(userStore)
 
 const mode = useColorMode()
 

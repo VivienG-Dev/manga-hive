@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, TransitionGroup } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import { useUserStore } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -15,14 +16,15 @@ import {
 } from '@/components/ui/select'
 
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
 interface UserData {
   id: number
+  email: string
   username: string
-  email?: string
-  avatarUrl?: string
-  backgroundImageUrl?: string
-  private?: boolean
+  avatarUrl?: string | null;
+  backgroundImageUrl?: string | null;
+  private: boolean
   libraryEntries?: any[]
 }
 
@@ -64,14 +66,12 @@ async function loadUserData() {
       })
     }
 
-    if (authStore.isAuthenticated && authStore.user) {
-      console.log('User is viewing their own profile')
-      userData.value = authStore.user
+    if (authStore.isAuthenticated && userStore.user) {
+      userData.value = userStore.user
     } else {
       error.value = 'You must be logged in to view this page'
     }
   } catch (e: any) {
-    console.error('Error loading user profile:', e)
     error.value = 'Failed to load user profile'
   } finally {
     loading.value = false
@@ -83,7 +83,7 @@ onMounted(async () => {
 })
 
 watch(
-  () => authStore.user,
+  () => userStore.user && authStore.isAuthenticated,
   async (newUser) => {
     if (newUser) {
       await loadUserData()
@@ -119,7 +119,7 @@ const formatStatus = (status: string) => {
         <div class="bg-white bg-opacity-60 p-2 rounded-md">
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
-        <div v-if="authStore.isAuthenticated && authStore.user?.id === userData.id">
+        <div v-if="authStore.isAuthenticated && userStore.user?.id === userData.id">
           <RouterLink to="/settings">
             <Button variant="outline" class="bg-white bg-opacity-60 p-2 rounded-md">Settings</Button>
           </RouterLink>

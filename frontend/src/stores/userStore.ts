@@ -20,21 +20,23 @@ api.interceptors.request.use(
 )
 
 interface UserData {
-    username: string;
-    password?: string;
+    id: number
+    email: string
+    username: string
     avatarUrl?: string | null;
     backgroundImageUrl?: string | null;
-    private?: boolean;
+    private: boolean
+    libraryEntries?: any[]
 }
 
 export const useUserStore = defineStore('userData', {
     state: () => ({
-        userData: {} as UserData,
+        user: {} as UserData,
     }),
     actions: {
         async updateProfile(userData: Partial<UserData>) {
             const response = await api.put('/users/me', userData)
-            this.userData = { ...this.userData, ...response.data }
+            this.user = { ...this.user, ...response.data }
             return response.data
         },
         async uploadFile(file: File, fieldName: 'avatarUrl' | 'backgroundImageUrl') {
@@ -52,6 +54,26 @@ export const useUserStore = defineStore('userData', {
                 return response.data.url
             } else {
                 throw new Error('File upload failed')
+            }
+        },
+        async fetchUserData() {
+            try {
+                const response = await api.get('/users/me')
+                this.user = response.data
+                return this.user
+            } catch (error) {
+                console.error('Failed to fetch user data:', error)
+                return null
+            }
+        },
+
+        async fetchPublicProfile(username: string) {
+            try {
+                const response = await api.get(`/users/${username}`)
+                return response.data
+            } catch (error) {
+                console.error('Failed to fetch public profile:', error)
+                throw error
             }
         }
     },

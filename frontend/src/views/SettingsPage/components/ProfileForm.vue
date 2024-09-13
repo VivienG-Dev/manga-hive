@@ -36,14 +36,14 @@ const profileFormSchema = toTypedSchema(z.object({
 const { handleSubmit, values, setFieldValue } = useForm({
     validationSchema: profileFormSchema,
     initialValues: {
-        avatarUrl: authStore.user?.avatarUrl || null,
-        backgroundImageUrl: authStore.user?.backgroundImageUrl || null,
-        private: authStore.user?.private ?? true,
+        avatarUrl: userStore.user?.avatarUrl || null,
+        backgroundImageUrl: userStore.user?.backgroundImageUrl || null,
+        private: userStore.user?.private ?? true,
     },
 })
 
 // Watch for changes in authStore.user and update form values
-watch(() => authStore.user, (newData) => {
+watch(() => userStore.user, (newData) => {
     if (newData) {
         setFieldValue('avatarUrl', newData.avatarUrl || null)
         setFieldValue('backgroundImageUrl', newData.backgroundImageUrl || null)
@@ -52,9 +52,9 @@ watch(() => authStore.user, (newData) => {
 }, { deep: true })
 
 const hasChanges = computed(() => {
-    return values.avatarUrl !== authStore.user?.avatarUrl ||
-        values.backgroundImageUrl !== authStore.user?.backgroundImageUrl ||
-        values.private !== authStore.user?.private
+    return values.avatarUrl !== userStore.user?.avatarUrl ||
+        values.backgroundImageUrl !== userStore.user?.backgroundImageUrl ||
+        values.private !== userStore.user?.private
 })
 
 const onSubmit = handleSubmit(async (values) => {
@@ -68,13 +68,13 @@ const onSubmit = handleSubmit(async (values) => {
 
     const changedValues: Partial<typeof values> = {}
 
-    if (values.avatarUrl !== authStore.user?.avatarUrl) {
+    if (values.avatarUrl !== userStore.user?.avatarUrl) {
         changedValues.avatarUrl = values.avatarUrl || null
     }
-    if (values.backgroundImageUrl !== authStore.user?.backgroundImageUrl) {
+    if (values.backgroundImageUrl !== userStore.user?.backgroundImageUrl) {
         changedValues.backgroundImageUrl = values.backgroundImageUrl || null
     }
-    if (values.private !== authStore.user?.private) {
+    if (values.private !== userStore.user?.private) {
         changedValues.private = values.private
     }
 
@@ -206,7 +206,7 @@ const closeCropper = (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
             <FormItem>
                 <FormLabel>Profile Image</FormLabel>
                 <FormControl>
-                    <img :src="authStore.user?.avatarUrl" alt="User avatar" class="rounded-md">
+                    <img :src="values.avatarUrl ?? ''" alt="User avatar" class="rounded-md">
                     <Input ref="avatarInputRef" type="file" class="cursor-pointer"
                         @change="(e: Event) => handleFileChange(e, 'avatarUrl')" />
                 </FormControl>
@@ -218,7 +218,7 @@ const closeCropper = (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
             <FormItem>
                 <FormLabel>Background Image</FormLabel>
                 <FormControl>
-                    <img :src="authStore.user?.backgroundImageUrl" alt="User avatar" class="rounded-md">
+                    <img :src="values.backgroundImageUrl ?? ''" alt="User background" class="rounded-md">
                     <Input ref="backgroundInputRef" type="file" class="cursor-pointer"
                         @change="(e: Event) => handleFileChange(e, 'backgroundImageUrl')" />
                 </FormControl>
@@ -233,7 +233,7 @@ const closeCropper = (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
                         Private Profile
                     </FormLabel>
                     <FormDescription>
-                        Make your profile visible to other users. Your profile is currently {{ authStore.user?.private ?
+                        Make your profile visible to other users. Your profile is currently {{ userStore.user?.private ?
                             'private' : 'public' }}.
                     </FormDescription>
                 </div>

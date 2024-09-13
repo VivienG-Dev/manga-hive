@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { useUserStore } from './userStore'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -53,15 +54,14 @@ interface User {
   id: number
   email: string
   username: string
-  avatarUrl?: string
-  backgroundImageUrl?: string
+  avatarUrl?: string | null;
+  backgroundImageUrl?: string | null;
   private: boolean
   libraryEntries?: any[]
 }
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null as User | null,
     isAuthenticated: false,
     refreshInterval: null as any,
     isLoading: true,
@@ -76,21 +76,8 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('Error refreshing token:', error)
         this.isAuthenticated = false
-        this.user = null
+        // this.user = null
         // Handle error (e.g., redirect to login page)
-      }
-    },
-    async fetchUserData() {
-      try {
-        const response = await api.get('/users/me')
-        this.user = response.data
-        this.isAuthenticated = true
-        return this.user
-      } catch (error) {
-        console.error('Failed to fetch user data:', error)
-        this.user = null
-        this.isAuthenticated = false
-        return null
       }
     },
     async login(email: string, password: string) {
@@ -98,7 +85,8 @@ export const useAuthStore = defineStore('auth', {
         const response = await api.post('/auth/login', { email, password })
         localStorage.setItem('accessToken', response.data.accessToken)
         this.isAuthenticated = true
-        await this.fetchUserData()
+        const userStore = useUserStore()
+        await userStore.fetchUserData()
         return response.data
       } catch (error) {
         console.error('Login failed', error)
@@ -122,7 +110,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await api.post('/auth/logout')
         localStorage.removeItem('accessToken')
-        this.user = null
+        // this.user = null
         this.isAuthenticated = false
       } catch (error) {
         console.error('Logout failed:', error)
@@ -138,26 +126,19 @@ export const useAuthStore = defineStore('auth', {
           if (expiresIn < 300) { // 5 minutes
             await this.refreshToken();
           }
-          await this.fetchUserData();
+          const userStore = useUserStore()
+          await userStore.fetchUserData();
+          this.isAuthenticated = true;
         } catch (error) {
           console.error('Error checking auth status:', error);
           this.isAuthenticated = false;
-          this.user = null;
+          // this.user = null;
         }
       } else {
         this.isAuthenticated = false;
-        this.user = null;
+        // this.user = null;
       }
       this.isLoading = false; // Set loading to false when done
     },
-    async fetchPublicProfile(username: string) {
-      try {
-        const response = await api.get(`/users/${username}`)
-        return response.data
-      } catch (error) {
-        console.error('Failed to fetch public profile:', error)
-        throw error
-      }
-    }
   }
 })
