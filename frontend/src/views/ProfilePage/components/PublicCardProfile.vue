@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
+import type { UserData } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -19,16 +20,6 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const userStore = useUserStore()
-
-interface UserData {
-  id: number
-  email: string
-  username: string
-  avatarUrl?: string | null;
-  backgroundImageUrl?: string | null;
-  private: boolean
-  libraryEntries?: any[]
-}
 
 const userData = ref<UserData | null>(null)
 const loading = ref(true)

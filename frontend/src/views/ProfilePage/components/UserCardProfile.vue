@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed, TransitionGroup } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
+import type { UserData } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -17,16 +18,6 @@ import {
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
-
-interface UserData {
-  id: number
-  email: string
-  username: string
-  avatarUrl?: string | null;
-  backgroundImageUrl?: string | null;
-  private: boolean
-  libraryEntries?: any[]
-}
 
 const userData = ref<UserData | null>(null)
 const loading = ref(true)

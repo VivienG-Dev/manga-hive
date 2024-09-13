@@ -19,7 +19,7 @@ api.interceptors.request.use(
     }
 )
 
-interface UserData {
+export interface UserData {
     id: number
     email: string
     username: string
