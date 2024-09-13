@@ -7,6 +7,9 @@ import type { UserData } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -16,10 +19,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useToast } from '@/components/ui/toast'
+import { Toaster } from '@/components/ui/toast'
+import { Ellipsis } from 'lucide-vue-next'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const mangaLibraryStore = useMangaLibraryStore()
+const { toast } = useToast()
 
 const userData = ref<UserData | null>(null)
 const loading = ref(true)
@@ -102,7 +132,21 @@ const formatStatus = (status: string) => {
 }
 
 const removeFromLibrary = async (id: number) => {
-  await mangaLibraryStore.removeItemFromLibrary(id)
+  try {
+    await mangaLibraryStore.removeItemFromLibrary(id)
+    toast({
+      title: 'Item removed from library',
+      description: 'The item has been successfully removed from your library.',
+    })
+    if (userData.value && userData.value.libraryEntries) {
+      userData.value.libraryEntries = userData.value.libraryEntries.filter(entry => entry.id !== id)
+    }
+  } catch (error) {
+    toast({
+      title: 'Failed to remove item from library',
+      description: 'An error occurred while removing the item from your library.',
+    })
+  }
 }
 </script>
 
@@ -110,6 +154,7 @@ const removeFromLibrary = async (id: number) => {
   <div v-if="loading" class="mt-8">Loading...</div>
   <div v-else-if="error" class="mt-8">{{ error }}</div>
   <div v-else-if="userData" class="mt-8">
+    <Toaster />
     <Card class="h-96 overflow-hidden">
       <CardHeader class="flex flex-row justify-between items-start h-4/6 bg-cover bg-no-repeat"
         :style="{ backgroundImage: `url('${userData.backgroundImageUrl || '/default-background.jpg'}')` }">
@@ -172,7 +217,7 @@ const removeFromLibrary = async (id: number) => {
       <div>
         <TransitionGroup name="fade" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Transition v-for="entry in filteredAndSortedEntries" :key="entry.id" name="fade">
-            <Card class="flex items-center space-x-4 p-2">
+            <Card class="relative flex items-center space-x-4 p-2">
               <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
                 class="w-30 h-40 object-cover rounded-md" />
               <Skeleton v-else class="h-64 w-full" />
@@ -186,7 +231,20 @@ const removeFromLibrary = async (id: number) => {
                   <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
                   <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
                 </CardContent>
-                <Button @click="removeFromLibrary(11)">Remove</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <Button class="absolute bottom-2 right-2" variant="ghost">
+                      <Ellipsis :size="20" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem class="cursor-pointer"> Edit </DropdownMenuItem>
+                      <DropdownMenuItem @click="removeFromLibrary(entry.id)" class="cursor-pointer"> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </Card>
           </Transition>
