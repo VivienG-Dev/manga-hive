@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, UseGuards, Req, Version, Para
 import { AuthGuard } from '@nestjs/passport';
 import { LibraryService } from './library.service';
 import { Status, ItemType } from '@prisma/client';
+import { LibraryDto } from './dto/library.dto';
 
 @Controller('library')
 export class LibraryController {
@@ -48,14 +49,8 @@ export class LibraryController {
   @UseGuards(AuthGuard('jwt'))
   @Version('1')
   @Put()
-  updateLibraryEntry(@Body() data: {
-    id: number;
-    status: Status;
-    userScore: number;
-    volumesProgress: number;
-    chaptersProgress: number;
-    notes: string;
-  }) {
-    return this.libraryService.updateLibraryEntry(data.id, data);
+  updateLibraryEntry(@Body() data: LibraryDto) {
+    const { id, ...updateData } = data;
+    return this.libraryService.updateLibraryEntry(id, updateData);
   }
 }

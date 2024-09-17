@@ -161,10 +161,17 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         throw error;
       }
     },
-    async updateLibraryEntry(id: number, payload: Partial<LibraryEntry>) {
+    async updateLibraryEntry(payload: {
+      id: number;
+      status?: 'PLAN_TO_READ' | 'READING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED';
+      userScore?: number;
+      volumesProgress?: number;
+      chaptersProgress?: number;
+      notes?: string;
+    }) {
       try {
-        const response = await api.put<LibraryEntry>(`/library/${id}`, payload);
-        const index = this.libraryEntries.findIndex(entry => entry.id === id);
+        const response = await api.put<LibraryEntry>('/library', payload);
+        const index = this.libraryEntries.findIndex(entry => entry.id === payload.id);
         if (index !== -1) {
           this.libraryEntries[index] = response.data;
         }

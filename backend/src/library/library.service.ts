@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Status, ItemType } from '@prisma/client';
-
+import { LibraryDto } from './dto/library.dto';
 @Injectable()
 export class LibraryService {
   constructor(private prisma: PrismaService) { }
@@ -54,15 +54,9 @@ export class LibraryService {
     });
   }
 
-  async updateLibraryEntry(id: number, data: {
-    status: Status;
-    userScore: number;
-    volumesProgress: number;
-    chaptersProgress: number;
-    notes: string;
-  }) {
+  async updateLibraryEntry(id: number, data: Partial<LibraryDto>) {
     return this.prisma.libraryEntry.update({
-      where: { id },
+      where: { id: id },
       data,
     });
   }
