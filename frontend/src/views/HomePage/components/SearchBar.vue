@@ -3,6 +3,8 @@ import { ref, watch, computed } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/components/ui/toast'
+import { Toaster } from '@/components/ui/toast'
 import { useMangaLibraryStore, type JikanManga } from '@/stores/mangaLibraryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -41,6 +43,7 @@ import { useRouter } from 'vue-router'
 const searchType = ref('manga')
 const searchQuery = ref('')
 const mangaLibraryStore = useMangaLibraryStore()
+const { toast } = useToast()
 
 // New refs for the drawer
 const isDrawerOpen = ref(false)
@@ -88,24 +91,44 @@ const openDrawer = (manga: JikanManga) => {
   isDrawerOpen.value = true
 }
 
-const handleAddToLibrary = () => {
+const handleAddToLibrary = async () => {
   if (selectedManga.value) {
-    mangaLibraryStore.addToLibrary({
-      malId: selectedManga.value.mal_id,
-      status: status.value,
-      userScore: userScore.value || 0,
-      volumesProgress: volumesProgress.value || 0,
-      chaptersProgress: chaptersProgress.value || 0,
-      notes: notes.value || '',
-    })
+    try {
+      const response = await mangaLibraryStore.addToLibrary({
+        malId: selectedManga.value.mal_id,
+        status: status.value,
+        userScore: userScore.value || 0,
+        volumesProgress: volumesProgress.value || 0,
+        chaptersProgress: chaptersProgress.value || 0,
+        notes: notes.value || '',
+      })
+
+      isDrawerOpen.value = false
+      // Reset form values
+      status.value = 'PLAN_TO_READ'
+      userScore.value = null
+      volumesProgress.value = null
+      chaptersProgress.value = null
+      notes.value = ''
+
+      if (response === 'Item already in library.') {
+        toast({
+          title: 'Already in your library.',
+          description: 'The manga is already in your library.',
+        })
+      } else {
+        toast({
+          title: 'Added to library',
+          description: 'The manga has been successfully added to your library.',
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Failed to add item to library',
+        description: 'An error occurred while adding the item to your library.',
+      })
+    }
   }
-  isDrawerOpen.value = false
-  // Reset form values
-  status.value = 'PLAN_TO_READ'
-  userScore.value = null
-  volumesProgress.value = null
-  chaptersProgress.value = null
-  notes.value = ''
 }
 
 const isLoading = computed(() => loading.value && mangaLibraryStore.searchResults.length === 0)
@@ -141,6 +164,7 @@ const goToMangaPage = (manga: JikanManga) => {
 
 <template>
   <div class="flex flex-col space-y-4">
+    <Toaster />
     <div class="flex space-x-2">
       <Select v-model="searchType" class="w-[180px]">
         <SelectTrigger class="bg-white">

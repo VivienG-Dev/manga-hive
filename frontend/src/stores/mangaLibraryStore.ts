@@ -134,7 +134,7 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         if (!manga) {
           throw new Error('Manga not found in search results');
         }
-        const response = await api.post<LibraryEntry>('/library', {
+        const response = await api.post<LibraryEntry | { message: string }>('/library', {
           malId: payload.malId,
           itemType: 'MANGA',
           status: payload.status,
@@ -150,7 +150,12 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
           chaptersProgress: payload.chaptersProgress,
           notes: payload.notes
         });
-        this.libraryEntries.push(response.data);
+
+        if ('message' in response.data) {
+          return response.data.message;
+        } else {
+          this.libraryEntries.push(response.data);
+        }
       } catch (error) {
         console.error('Failed to add item to library', error);
         throw error;

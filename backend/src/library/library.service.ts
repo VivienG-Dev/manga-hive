@@ -22,25 +22,30 @@ export class LibraryService {
     volumesProgress: number;
     notes: string;
   }) {
-    return this.prisma.libraryEntry.create({
-      data: {
-        userId,
-        malId: data.malId,
-        itemType: data.itemType,
-        status: data.status,
-        title: data.title,
-        imageUrl: data.imageUrl,
-        synopsis: data.synopsis,
-        authors: data.authors,
-        genres: data.genres,
-        chapters: data.chapters,
-        volumes: data.volumes,
-        userScore: data.userScore,
-        chaptersProgress: data.chaptersProgress,
-        volumesProgress: data.volumesProgress,
-        notes: data.notes,
+    const existingEntry = await this.prisma.libraryEntry.findUnique({
+      where: {
+        userId_malId_itemType: {
+          userId,
+          malId: data.malId,
+          itemType: data.itemType,
+        },
       },
     });
+
+    if (existingEntry) {
+      // return this.prisma.libraryEntry.update({
+      //   where: { id: existingEntry.id },
+      //   data,
+      // });
+      return { message: 'Item already in library.' };
+    } else {
+      return this.prisma.libraryEntry.create({
+        data: {
+          userId,
+          ...data,
+        },
+      });
+    }
   }
 
   async getLibrary(userId: number) {
