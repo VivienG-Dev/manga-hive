@@ -55,6 +55,14 @@ const userData = ref<UserData | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
+const isDrawerOpen = ref(false)
+const selectedEntry = ref<any>(null)
+const status = ref<'PLAN_TO_READ' | 'READING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED'>('PLAN_TO_READ')
+const userScore = ref<number>(0)
+const volumesProgress = ref<number>(0)
+const chaptersProgress = ref<number>(0)
+const notes = ref<string>('')
+
 const sortOrder = ref('asc')
 const statusFilter = ref('all')
 
@@ -131,6 +139,15 @@ const formatStatus = (status: string) => {
   }
 }
 
+const refreshUserData = async () => {
+  try {
+    await userStore.fetchUserData()
+    userData.value = userStore.user
+  } catch (error) {
+    console.error('Failed to refresh user data', error)
+  }
+}
+
 const removeFromLibrary = async (id: number) => {
   try {
     await mangaLibraryStore.removeItemFromLibrary(id)
@@ -145,6 +162,41 @@ const removeFromLibrary = async (id: number) => {
     toast({
       title: 'Failed to remove item from library',
       description: 'An error occurred while removing the item from your library.',
+    })
+  }
+}
+
+const openDrawer = (entry: any) => {
+  selectedEntry.value = entry
+  status.value = entry.status
+  userScore.value = entry.score
+  volumesProgress.value = entry.volumesProgress
+  chaptersProgress.value = entry.chaptersProgress
+  notes.value = entry.notes || ''
+  isDrawerOpen.value = true
+}
+
+const updateLibraryEntry = async () => {
+  isDrawerOpen.value = false
+  try {
+    await mangaLibraryStore.updateLibraryEntry({
+      id: selectedEntry.value.id,
+      status: status.value,
+      userScore: userScore.value,
+      volumesProgress: volumesProgress.value,
+      chaptersProgress: chaptersProgress.value,
+      notes: notes.value,
+    })
+    await refreshUserData()
+    toast({
+      title: 'Library entry updated',
+      description: 'The library entry has been successfully updated.',
+    })
+  } catch (error) {
+    console.error('Failed to update library entry', error)
+    toast({
+      title: 'Failed to update library entry',
+      description: 'An error occurred while updating the library entry.',
     })
   }
 }
@@ -237,9 +289,9 @@ const removeFromLibrary = async (id: number) => {
                       <Ellipsis :size="20" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent align="end">
                     <DropdownMenuGroup>
-                      <DropdownMenuItem class="cursor-pointer"> Edit </DropdownMenuItem>
+                      <DropdownMenuItem @click.stop="openDrawer(entry)" class="cursor-pointer"> Edit </DropdownMenuItem>
                       <DropdownMenuItem @click="removeFromLibrary(entry.id)" class="cursor-pointer"> Delete
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -250,6 +302,66 @@ const removeFromLibrary = async (id: number) => {
           </Transition>
         </TransitionGroup>
       </div>
+
+      <Drawer v-model:open="isDrawerOpen">
+        <DrawerContent>
+          <div class="mx-auto w-full max-w-lg">
+            <DrawerHeader>
+              <DrawerTitle>{{ selectedEntry?.title }}</DrawerTitle>
+              <DrawerDescription>Fill in the details to add this manga to your library.</DrawerDescription>
+            </DrawerHeader>
+            <div class="p-4">
+              <div class="space-y-4">
+                <div class="flex items-center space-x-8">
+                  <div class="w-full">
+                    <Label for="status">Status</Label>
+                    <Select v-model="status">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PLAN_TO_READ">Plan to Read</SelectItem>
+                        <SelectItem value="READING">Reading</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                        <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                        <SelectItem value="DROPPED">Dropped</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div class="w-full">
+                    <Label for="userScore">Your Score (0-10)</Label>
+                    <Input id="userScore" v-model="userScore" type="number" min="0" max="10" />
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-8">
+                  <div class="w-full">
+                    <Label for="volumesProgress">Volumes Progress</Label>
+                    <Input id="volumesProgress" v-model="volumesProgress" type="number" min="0" />
+                  </div>
+
+                  <div class="w-full">
+                    <Label for="chaptersProgress">Chapters Progress</Label>
+                    <Input id="chaptersProgress" v-model="chaptersProgress" type="number" min="0" />
+                  </div>
+                </div>
+
+                <div>
+                  <Label for="notes">Notes</Label>
+                  <Textarea id="notes" v-model="notes" />
+                </div>
+              </div>
+            </div>
+            <DrawerFooter class="flex flex-row justify-between">
+              <DrawerClose class="w-full" as-child>
+                <Button class="w-full" variant="outline">Cancel</Button>
+              </DrawerClose>
+              <Button class="w-full" @click="updateLibraryEntry">Update</Button>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
     <div v-else-if="userData.libraryEntries && userData.libraryEntries.length === 0" class="mt-8">
       <p>You haven't added any entries to your library yet.</p>
