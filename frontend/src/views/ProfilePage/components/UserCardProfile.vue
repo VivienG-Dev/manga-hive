@@ -169,7 +169,7 @@ const removeFromLibrary = async (id: number) => {
 const openDrawer = (entry: any) => {
   selectedEntry.value = entry
   status.value = entry.status
-  userScore.value = entry.score
+  userScore.value = entry.userScore
   volumesProgress.value = entry.volumesProgress
   chaptersProgress.value = entry.chaptersProgress
   notes.value = entry.notes || ''
