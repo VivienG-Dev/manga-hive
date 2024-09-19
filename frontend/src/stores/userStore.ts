@@ -23,6 +23,9 @@ export interface UserData {
     id: number
     email: string
     username: string
+    oldPassword: string
+    newPassword: string
+    confirmPassword: string
     avatarUrl?: string | null;
     backgroundImageUrl?: string | null;
     private: boolean
@@ -35,9 +38,28 @@ export const useUserStore = defineStore('userData', {
     }),
     actions: {
         async updateProfile(userData: Partial<UserData>) {
-            const response = await api.put('/users/me', userData)
-            this.user = { ...this.user, ...response.data }
-            return response.data
+            // Check if we're updating the password
+            if (userData.newPassword) {
+                if (!userData.oldPassword) {
+                    throw new Error('Old password is required to change password');
+                }
+                // We'll send both old and new password to the backend
+                const response = await api.put('/users/me/change-password', {
+                    oldPassword: userData.oldPassword,
+                    newPassword: userData.newPassword
+                });
+                // Remove password fields from userData
+                delete userData.oldPassword;
+                delete userData.newPassword;
+            }
+
+            // Update other fields if any
+            if (Object.keys(userData).length > 0) {
+                const response = await api.put('/users/me', userData);
+                this.user = { ...this.user, ...response.data };
+            }
+
+            return this.user;
         },
         async uploadFile(file: File, fieldName: 'avatarUrl' | 'backgroundImageUrl') {
             const formData = new FormData()

@@ -106,4 +106,17 @@ export class UsersController {
 
     return { url: fileUrl };
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Version('1')
+  @Put('me/change-password')
+  async changePassword(
+    @Req() req: Request,
+    @Body('oldPassword') oldPassword: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    const userId = (req.user as any).userId;
+    await this.usersService.changePassword(userId, oldPassword, newPassword);
+    return { message: 'Password changed successfully' };
+  }
 }

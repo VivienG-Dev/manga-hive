@@ -12,14 +12,16 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/components/ui/toast'
 import { Toaster } from '@/components/ui/toast'
+import type { UserData } from '@/stores/userStore'
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
 const { toast } = useToast()
 
+// Update the schema
 const profileFormSchema = toTypedSchema(z.object({
-    password: z.string()
-        .min(1, 'Password is required')
+    oldPassword: z.string(),
+    newPassword: z.string().min(1, 'Password is required')
         .min(8, 'Password must be at least 8 characters long')
         .max(20, 'Password must not exceed 20 characters')
         .refine((val) => /[A-Za-z]/.test(val), 'Password must contain at least one letter')
@@ -27,51 +29,66 @@ const profileFormSchema = toTypedSchema(z.object({
         .refine(
             (val) => /[@$!%*#?&]/.test(val),
             'Password must contain at least one special character (@$!%*#?&)'
-        ).optional().or(z.literal(''))
+        ),
+    confirmPassword: z.string().min(1, 'Password is required')
+        .min(8, 'Password must be at least 8 characters long')
+        .max(20, 'Password must not exceed 20 characters')
+        .refine((val) => /[A-Za-z]/.test(val), 'Password must contain at least one letter')
+        .refine((val) => /\d/.test(val), 'Password must contain at least one number')
+        .refine(
+            (val) => /[@$!%*#?&]/.test(val),
+            'Password must contain at least one special character (@$!%*#?&)'
+        )
 }))
 
 const { handleSubmit, values, setFieldValue } = useForm({
-    validationSchema: profileFormSchema,
-    initialValues: {
-        password: ''
-    },
+    validationSchema: profileFormSchema
 })
 
+// Update the computed property
 const hasChanges = computed(() => {
-    return values.password !== ''
+    return values.oldPassword !== '' && values.newPassword !== '' && values.confirmPassword !== ''
 })
 
 const onSubmit = handleSubmit(async (values) => {
     if (!hasChanges.value) {
         toast({
             title: 'No changes detected',
-            description: 'Please make changes before submitting.',
+            description: 'Please fill all password fields to update your password.',
         })
         return
     }
 
-    const changedValues: Partial<typeof values> = {}
-
-    if (values.password !== '') {
-        changedValues.password = values.password
+    if (values.newPassword !== values.confirmPassword) {
+        toast({
+            title: 'Error',
+            description: 'New password and confirmation do not match.',
+            variant: 'destructive',
+        })
+        return
     }
 
-    if (Object.keys(changedValues).length > 0) {
-        try {
-            await userStore.updateProfile(changedValues)
-            // Reset the password field after successful update
-            setFieldValue('password', '')
-            toast({
-                title: 'Profile updated',
-                description: 'Your profile has been successfully updated.',
-            })
-        } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'Failed to update profile. Please try again.',
-                variant: 'destructive',
-            })
-        }
+    try {
+        await userStore.updateProfile({
+            oldPassword: values.oldPassword,
+            newPassword: values.newPassword,
+        } as Partial<UserData>)
+
+        // Reset the password fields after successful update
+        setFieldValue('oldPassword', '')
+        setFieldValue('newPassword', '')
+        setFieldValue('confirmPassword', '')
+
+        toast({
+            title: 'Profile updated',
+            description: 'Your password has been successfully updated.',
+        })
+    } catch (error: any) {
+        toast({
+            title: 'Error',
+            description: error.response.data.message || 'Failed to update password. Please try again.',
+            variant: 'destructive',
+        })
     }
 })
 </script>
@@ -88,11 +105,37 @@ const onSubmit = handleSubmit(async (values) => {
     </div>
     <Separator />
     <form class="space-y-8" @submit="onSubmit">
-        <FormField v-slot="{ componentField }" name="password">
+        <FormField v-slot="{ componentField }" name="oldPassword">
             <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Old Password</FormLabel>
+                <FormControl>
+                    <Input type="password" placeholder="Old password" v-bind="componentField" />
+                </FormControl>
+                <FormDescription>
+                    Leave blank if you don't want to change your password.
+                </FormDescription>
+                <FormMessage />
+            </FormItem>
+        </FormField>
+
+        <FormField v-slot="{ componentField }" name="newPassword">
+            <FormItem>
+                <FormLabel>New Password</FormLabel>
                 <FormControl>
                     <Input type="password" placeholder="New password" v-bind="componentField" />
+                </FormControl>
+                <FormDescription>
+                    Leave blank if you don't want to change your password.
+                </FormDescription>
+                <FormMessage />
+            </FormItem>
+        </FormField>
+
+        <FormField v-slot="{ componentField }" name="confirmPassword">
+            <FormItem>
+                <FormLabel>Confirm new Password</FormLabel>
+                <FormControl>
+                    <Input type="password" placeholder="Confirm new password" v-bind="componentField" />
                 </FormControl>
                 <FormDescription>
                     Leave blank if you don't want to change your password.

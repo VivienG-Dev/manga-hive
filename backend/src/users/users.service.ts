@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserDto } from './dto/user.dto';
@@ -84,10 +85,6 @@ export class UsersService {
       updateData.username = body.username;
     }
 
-    if (body.password !== undefined) {
-      updateData.password = await bcrypt.hash(body.password, 10);
-    }
-
     if (body.avatarUrl !== undefined) {
       updateData.avatarUrl = body.avatarUrl;
     }
@@ -118,6 +115,27 @@ export class UsersService {
       where: {
         id,
       },
+    });
+  }
+
+  async changePassword(userId: number, oldPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException('Invalid old password');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
     });
   }
 }
