@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useMangaLibraryStore, type JikanManga, type JikanCharacter, type JikanImage } from '@/stores/mangaLibraryStore'
+import { useMangaLibraryStore, type JikanManga, type JikanCharacter } from '@/stores/mangaLibraryStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const route = useRoute()
 const mangaLibraryStore = useMangaLibraryStore()
 const manga = ref<JikanManga | null>(null)
 const characters = ref<JikanCharacter[]>([])
-const images = ref<JikanImage[]>([])
 const loading = ref(true)
 
 const showAllCharacters = ref(false)
@@ -26,7 +26,6 @@ onMounted(async () => {
     try {
         manga.value = await mangaLibraryStore.fetchMangaDetails(mangaId)
         characters.value = await mangaLibraryStore.fetchMangaCharacters(mangaId)
-        images.value = await mangaLibraryStore.fetchMangaImages(mangaId)
     } catch (error) {
         console.error('Error fetching manga details:', error)
     } finally {
@@ -51,9 +50,16 @@ const formatDate = (dateString: string): string => {
 </script>
 
 <template>
-    <main class="container mx-auto px-4 py-8 space-y-16">
-        <div v-if="loading">Loading...</div>
-        <div v-else-if="manga" class="flex flex-col md:flex-row gap-8 card-transition-large">
+    <main v-if="loading" class="container flex flex-col md:flex-row mx-auto px-4 py-8 gap-4">
+        <Skeleton class="h-96 md:h-[500px] w-full md:w-96 rounded-md" />
+        <div class="space-y-2 w-full">
+            <Skeleton class="h-8 md:h-[40px]" />
+            <Skeleton class="h-44 md:h-[144px]" />
+            <Skeleton class="h-44 md:h-[300px]" />
+        </div>
+    </main>
+    <main v-else-if="manga" class="container mx-auto px-4 py-8 space-y-16">
+        <div class="flex flex-col md:flex-row gap-8 card-transition-large">
             <div class="md:w-1/3">
                 <img :src="manga.images.jpg.large_image_url" :alt="manga.title" class="w-full rounded-lg shadow-lg"
                     :style="`view-transition-name: card-${manga.mal_id};`" />
@@ -128,9 +134,6 @@ const formatDate = (dateString: string): string => {
                 </div>
             </div>
         </div>
-        <div v-else>
-            <p>Manga not found</p>
-        </div>
 
         <div v-if="characters.length > 0">
             <h2 class="text-2xl font-bold mb-4">Characters</h2>
@@ -165,20 +168,10 @@ const formatDate = (dateString: string): string => {
                 </div>
             </div>
         </div>
-        <div class="mt-4">
+        <div v-if="characters.length > 0" class="mt-4">
             <Button @click="toggleCharacters">
                 {{ showAllCharacters ? 'Hide' : 'More' }} Characters
             </Button>
-        </div>
-
-        <div v-if="images.length > 0">
-            <h2 class="text-2xl font-bold mb-4">Images</h2>
-            <div class="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-2 gap-4">
-                <div v-for="image in images" :key="image.jpg.image_url" class="flex flex-col items-center">
-                    <img :src="image.jpg.large_image_url"
-                        class="w-full h-auto object-cover rounded-lg shadow-lg mb-2" />
-                </div>
-            </div>
         </div>
     </main>
 </template>
