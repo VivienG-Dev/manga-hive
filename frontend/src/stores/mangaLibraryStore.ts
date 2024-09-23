@@ -105,7 +105,6 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
     searchResults: [] as JikanManga[],
     libraryEntries: [] as LibraryEntry[],
     characters: [] as JikanCharacter[],
-    images: [] as JikanImage[],
     pagination: {
       currentPage: 1,
       lastVisiblePage: 1,
@@ -215,16 +214,6 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
         console.error('Error fetching manga characters:', error)
         throw error
       }
-    },
-    async fetchMangaImages(mangaId: string): Promise<JikanImage[]> {
-      try {
-        const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/pictures`)
-        const data = await response.json()
-        return data.data
-      } catch (error) {
-        console.error('Error fetching manga images:', error)
-        throw error
-      }
-    },
+    }
   },
 })
