@@ -55,7 +55,7 @@ const formatDate = (dateString: string): string => {
         <div class="space-y-2 w-full">
             <Skeleton class="h-8 md:h-[40px]" />
             <Skeleton class="h-44 md:h-[144px]" />
-            <Skeleton class="h-44 md:h-[300px]" />
+            <Skeleton class="hidden md:block  h-44 md:h-[300px]" />
         </div>
     </main>
     <main v-else-if="manga" class="container mx-auto px-4 py-8 space-y-16">
