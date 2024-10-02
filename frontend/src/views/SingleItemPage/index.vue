@@ -12,6 +12,7 @@ const mangaLibraryStore = useMangaLibraryStore()
 const manga = ref<JikanManga | null>(null)
 const characters = ref<JikanCharacter[]>([])
 const loading = ref(true)
+const errorMessage = ref<string | null>(null) // New ref for error message
 
 const showAllCharacters = ref(false)
 const mainCharacters = computed(() => characters.value.filter(char => char.role === 'Main'))
@@ -26,8 +27,8 @@ onMounted(async () => {
     try {
         manga.value = await mangaLibraryStore.fetchMangaDetails(mangaId)
         characters.value = await mangaLibraryStore.fetchMangaCharacters(mangaId)
-    } catch (error) {
-        console.error('Error fetching manga details:', error)
+    } catch (error: any) {
+        errorMessage.value = error.message
     } finally {
         loading.value = false
     }
@@ -38,7 +39,6 @@ const formatAuthorName = (authorName: string): string => {
     return nameParts.length > 1 ? `${nameParts[1]} ${nameParts[0]}` : authorName;
 };
 
-// Cannot change the word wrap my IDE so let's just use a function to check if the date is the default date (that's a fucking bad way to do it ahahah)
 const isDefaultDate = (date: string): boolean => {
     return new Date(date).getTime() === 0;
 }
@@ -57,6 +57,9 @@ const formatDate = (dateString: string): string => {
             <Skeleton class="h-44 md:h-[144px]" />
             <Skeleton class="hidden md:block  h-44 md:h-[300px]" />
         </div>
+    </main>
+    <main v-else-if="errorMessage" class="container mx-auto px-4 py-8 space-y-16"> <!-- Display error message -->
+        <div class="text-red-500">{{ errorMessage }}</div>
     </main>
     <main v-else-if="manga" class="container mx-auto px-4 py-8 space-y-16">
         <div class="flex flex-col md:flex-row gap-8 card-transition-large">
@@ -156,7 +159,7 @@ const formatDate = (dateString: string): string => {
                     <Card v-for="character in otherCharacters" :key="character.character.mal_id" class="flex flex-row">
                         <CardContent class="p-2">
                             <img :src="character.character.images.webp.image_url" :alt="character.character.name"
-                                class="w-auto h-28 object-cover rounded-md" />
+                                class="w-20 h-28 object-cover rounded-md" />
                         </CardContent>
                         <CardContent class="flex flex-col justify-around items-left p-2">
                             <span class="font-semibold">{{ character.character.name }}</span>

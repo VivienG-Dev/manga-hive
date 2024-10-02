@@ -105,6 +105,7 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
     searchResults: [] as JikanManga[],
     libraryEntries: [] as LibraryEntry[],
     characters: [] as JikanCharacter[],
+    topManga: [] as JikanManga[],
     pagination: {
       currentPage: 1,
       lastVisiblePage: 1,
@@ -198,6 +199,10 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
     async fetchMangaDetails(mangaId: string): Promise<JikanManga> {
       try {
         const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/full`)
+        if (response.status === 429) {
+          const errorData = await response.json();
+          throw new Error(errorData.message);
+        }
         const data = await response.json()
         return data.data
       } catch (error) {
@@ -208,10 +213,25 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
     async fetchMangaCharacters(mangaId: string): Promise<JikanCharacter[]> {
       try {
         const response = await fetch(`https://api.jikan.moe/v4/manga/${mangaId}/characters`)
+        if (response.status === 429) {
+          const errorData = await response.json();
+          throw new Error(errorData.message);
+        }
         const data = await response.json()
         return data.data
       } catch (error) {
         console.error('Error fetching manga characters:', error)
+        throw error
+      }
+    },
+    async fetchTopManga(): Promise<JikanManga> {
+      try {
+        const response = await fetch('https://api.jikan.moe/v4/top/manga?limit=5&filter=bypopularity')
+        const data = await response.json()
+        this.topManga = data.data
+        return data.data
+      } catch (error) {
+        console.error('Error fetching manga details:', error)
         throw error
       }
     }
