@@ -53,7 +53,6 @@ const userScore = ref<any>(null)
 const volumesProgress = ref<any>(null)
 const chaptersProgress = ref<any>(null)
 const notes = ref<string>('')
-const topManga = ref<JikanManga | null>(null)
 
 const loading = ref(false)
 
