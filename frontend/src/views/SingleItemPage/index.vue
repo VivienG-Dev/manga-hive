@@ -2,21 +2,54 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMangaLibraryStore, type JikanManga, type JikanCharacter } from '@/stores/mangaLibraryStore'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/components/ui/toast'
+import { Toaster } from '@/components/ui/toast'
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '@/components/ui/drawer'
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 const route = useRoute()
+const { toast } = useToast()
 const mangaLibraryStore = useMangaLibraryStore()
 const manga = ref<JikanManga | null>(null)
 const characters = ref<JikanCharacter[]>([])
 const loading = ref(true)
-const errorMessage = ref<string | null>(null) // New ref for error message
+const errorMessage = ref<string | null>(null)
 
 const showAllCharacters = ref(false)
 const mainCharacters = computed(() => characters.value.filter(char => char.role === 'Main'))
 const otherCharacters = computed(() => characters.value.filter(char => char.role !== 'Main'))
+
+// New refs for the drawer
+const isDrawerOpen = ref(false)
+const selectedManga = ref<JikanManga | null>(null)
+const status = ref<'PLAN_TO_READ' | 'READING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED'>('PLAN_TO_READ')
+const userScore = ref<any>(null)
+const volumesProgress = ref<any>(null)
+const chaptersProgress = ref<any>(null)
+const notes = ref<string>('')
 
 const toggleCharacters = () => {
     showAllCharacters.value = !showAllCharacters.value
@@ -47,6 +80,51 @@ const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
+
+const openDrawer = (manga: JikanManga) => {
+    selectedManga.value = manga
+    isDrawerOpen.value = true
+}
+
+const handleAddToLibrary = async () => {
+    if (selectedManga.value) {
+        try {
+            const response = await mangaLibraryStore.addToLibrary({
+                malId: selectedManga.value.mal_id,
+                status: status.value,
+                userScore: userScore.value || 0,
+                volumesProgress: volumesProgress.value || 0,
+                chaptersProgress: chaptersProgress.value || 0,
+                notes: notes.value || '',
+            })
+
+            isDrawerOpen.value = false
+            // Reset form values
+            status.value = 'PLAN_TO_READ'
+            userScore.value = null
+            volumesProgress.value = null
+            chaptersProgress.value = null
+            notes.value = ''
+
+            if (response === 'Item already in library.') {
+                toast({
+                    title: 'Already in your library.',
+                    description: 'The manga is already in your library.',
+                })
+            } else {
+                toast({
+                    title: 'Added to library',
+                    description: 'The manga has been successfully added to your library.',
+                })
+            }
+        } catch (error) {
+            toast({
+                title: 'Failed to add item to library',
+                description: 'An error occurred while adding the item to your library.',
+            })
+        }
+    }
+}
 </script>
 
 <template>
@@ -62,11 +140,12 @@ const formatDate = (dateString: string): string => {
         <div class="text-red-500">{{ errorMessage }}</div>
     </main>
     <main v-else-if="manga" class="container mx-auto px-4 py-8 space-y-16">
+        <Toaster />
         <div class="flex flex-col md:flex-row gap-8 card-transition-large">
             <div class="md:w-1/3 flex flex-col gap-2">
                 <img :src="manga.images.webp.large_image_url" :alt="manga.title" class="w-full rounded-lg shadow-lg"
                     :style="`view-transition-name: card-${manga.mal_id};`" />
-                <Button>Add to list</Button>
+                <Button @click.stop="openDrawer(manga)">Add to list</Button>
             </div>
             <div class="md:w-2/3">
                 <div>
@@ -176,5 +255,65 @@ const formatDate = (dateString: string): string => {
                 {{ showAllCharacters ? 'Hide' : 'More' }} Characters
             </Button>
         </div>
+
+        <Drawer v-model:open="isDrawerOpen">
+            <DrawerContent>
+                <div class="mx-auto w-full max-w-lg">
+                    <DrawerHeader>
+                        <DrawerTitle>{{ selectedManga?.title }}</DrawerTitle>
+                        <DrawerDescription>Fill in the details to add this manga to your library.</DrawerDescription>
+                    </DrawerHeader>
+                    <div class="p-4">
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-8">
+                                <div class="w-full">
+                                    <Label for="status">Status</Label>
+                                    <Select v-model="status">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="PLAN_TO_READ">Plan to Read</SelectItem>
+                                            <SelectItem value="READING">Reading</SelectItem>
+                                            <SelectItem value="COMPLETED">Completed</SelectItem>
+                                            <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                                            <SelectItem value="DROPPED">Dropped</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div class="w-full">
+                                    <Label for="userScore">Your Score (0-10)</Label>
+                                    <Input id="userScore" v-model="userScore" type="number" min="0" max="10" />
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-8">
+                                <div class="w-full">
+                                    <Label for="volumesProgress">Volumes Progress</Label>
+                                    <Input id="volumesProgress" v-model="volumesProgress" type="number" min="0" />
+                                </div>
+
+                                <div class="w-full">
+                                    <Label for="chaptersProgress">Chapters Progress</Label>
+                                    <Input id="chaptersProgress" v-model="chaptersProgress" type="number" min="0" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label for="notes">Notes</Label>
+                                <Textarea id="notes" v-model="notes" />
+                            </div>
+                        </div>
+                    </div>
+                    <DrawerFooter class="flex flex-row justify-between">
+                        <DrawerClose class="w-full">
+                            <Button class="w-full" variant="outline">Cancel</Button>
+                        </DrawerClose>
+                        <Button class="w-full" @click="handleAddToLibrary">Add to Library</Button>
+                    </DrawerFooter>
+                </div>
+            </DrawerContent>
+        </Drawer>
     </main>
 </template>
