@@ -134,21 +134,22 @@ export const useMangaLibraryStore = defineStore('mangaLibrary', {
     },
     async addToLibrary(payload: AddToLibraryPayload) {
       try {
-        const manga = this.searchResults.find(result => result.mal_id === payload.malId);
-        if (!manga) {
-          throw new Error('Manga not found in search results');
+        const mangaDetails = await this.fetchMangaDetails(payload.malId.toString());
+        if (!mangaDetails) {
+          throw new Error('Manga not found');
         }
+
         const response = await api.post<LibraryEntry | { message: string }>('/library', {
           malId: payload.malId,
           itemType: 'MANGA',
           status: payload.status,
-          title: manga.title,
-          imageUrl: manga.images.jpg.image_url,
-          synopsis: manga.synopsis,
-          authors: manga.authors.map(author => author.name).join(', '),
-          genres: manga.genres.map(genre => genre.name).join(', '),
-          chapters: manga.chapters,
-          volumes: manga.volumes,
+          title: mangaDetails.title,
+          imageUrl: mangaDetails.images.jpg.image_url,
+          synopsis: mangaDetails.synopsis,
+          authors: mangaDetails.authors.map(author => author.name).join(', '),
+          genres: mangaDetails.genres.map(genre => genre.name).join(', '),
+          chapters: mangaDetails.chapters,
+          volumes: mangaDetails.volumes,
           userScore: payload.userScore,
           volumesProgress: payload.volumesProgress,
           chaptersProgress: payload.chaptersProgress,
