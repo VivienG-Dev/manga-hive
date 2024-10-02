@@ -63,8 +63,8 @@ const formatDate = (dateString: string): string => {
     </main>
     <main v-else-if="manga" class="container mx-auto px-4 py-8 space-y-16">
         <div class="flex flex-col md:flex-row gap-8 card-transition-large">
-            <div class="md:w-1/3">
-                <img :src="manga.images.jpg.large_image_url" :alt="manga.title" class="w-full rounded-lg shadow-lg"
+            <div class="md:w-1/3 flex flex-col gap-2">
+                <img :src="manga.images.webp.large_image_url" :alt="manga.title" class="w-full rounded-lg shadow-lg"
                     :style="`view-transition-name: card-${manga.mal_id};`" />
                 <Button>Add to list</Button>
             </div>

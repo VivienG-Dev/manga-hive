@@ -33,6 +33,10 @@ export interface JikanManga {
       image_url: string;
       large_image_url: string;
     };
+    webp: {
+      image_url: string;
+      large_image_url: string;
+    }
   };
   synopsis: string;
   authors: { name: string }[];
