@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -53,6 +53,7 @@ const userScore = ref<any>(null)
 const volumesProgress = ref<any>(null)
 const chaptersProgress = ref<any>(null)
 const notes = ref<string>('')
+const topManga = ref<JikanManga | null>(null)
 
 const loading = ref(false)
 
@@ -160,11 +161,46 @@ const router = useRouter()
 const goToMangaPage = (manga: JikanManga) => {
   router.push({ name: 'items', params: { mangaid: manga.mal_id.toString(), mangatitle: manga.title.toString().replace(/ /g, '-') } })
 }
+
+onMounted(async () => {
+  try {
+    await mangaLibraryStore.fetchTopManga()
+  } catch (error) {
+    console.error('Error fetching manga details:', error)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
   <div class="flex flex-col space-y-4">
     <Toaster />
+
+    <div v-if="searchType === 'manga'">
+      <h2 class="text-xl font-bold mb-2">Top 5 popular manga:</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <template v-if="isLoading">
+          <Skeleton v-for="n in 10" :key="n" class="h-64 w-full" />
+        </template>
+        <template v-else>
+          <Card v-for="manga in mangaLibraryStore.topManga" :key="manga.mal_id" :data-manga-id="manga.mal_id"
+            class="p-2 space-y-4 cursor-pointer" @click="goToMangaPage(manga)">
+            <CardHeader class="relative p-0">
+              <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-80 object-cover rounded-md"
+                :style="`view-transition-name: card-${manga.mal_id};`" />
+              <Button @click.stop="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
+                <CirclePlus class="w-6 h-6" />
+              </Button>
+            </CardHeader>
+            <CardContent class="p-0">
+              <CardTitle>{{ manga.title }}</CardTitle>
+            </CardContent>
+          </Card>
+        </template>
+      </div>
+    </div>
+
     <div class="flex space-x-2">
       <Select v-model="searchType" class="w-[180px]">
         <SelectTrigger class="bg-white">
@@ -192,7 +228,7 @@ const goToMangaPage = (manga: JikanManga) => {
           <Card v-for="manga in mangaLibraryStore.searchResults" :key="manga.mal_id" :data-manga-id="manga.mal_id"
             class="p-2 space-y-4 cursor-pointer" @click="goToMangaPage(manga)">
             <CardHeader class="relative p-0">
-              <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-64 object-cover rounded-md"
+              <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-80 object-cover rounded-md"
                 :style="`view-transition-name: card-${manga.mal_id};`" />
               <Button @click.stop="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
                 <CirclePlus class="w-6 h-6" />
