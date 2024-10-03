@@ -128,7 +128,7 @@ const handleAddToLibrary = async () => {
 </script>
 
 <template>
-    <main v-if="loading" class="container flex flex-col md:flex-row mx-auto px-4 py-8 gap-4">
+    <main v-if="loading" class="container flex flex-col md:flex-row mx-auto px-4 py-2 md:py-4 gap-4">
         <Skeleton class="h-96 md:h-[500px] w-full md:w-96 rounded-md" />
         <div class="space-y-2 w-full">
             <Skeleton class="h-8 md:h-[40px]" />
@@ -136,18 +136,19 @@ const handleAddToLibrary = async () => {
             <Skeleton class="hidden md:block  h-44 md:h-[300px]" />
         </div>
     </main>
-    <main v-else-if="errorMessage" class="container mx-auto px-4 py-8 space-y-16"> <!-- Display error message -->
+    <main v-else-if="errorMessage" class="container mx-auto px-4 space-y-16">
+        <!-- Display error message -->
         <div class="text-red-500">{{ errorMessage }}</div>
     </main>
-    <main v-else-if="manga" class="container mx-auto px-4 py-8 space-y-16">
+    <main v-else-if="manga" class="container mx-auto px-4 space-y-16">
         <Toaster />
         <div class="flex flex-col md:flex-row gap-8 card-transition-large">
-            <div class="md:w-1/3 flex flex-col gap-2">
+            <div class="md:w-1/4 flex flex-col gap-2">
                 <img :src="manga.images.webp.large_image_url" :alt="manga.title" class="w-full rounded-lg shadow-lg"
                     :style="`view-transition-name: card-${manga.mal_id};`" />
                 <Button @click.stop="openDrawer(manga)">Add to list</Button>
             </div>
-            <div class="md:w-2/3">
+            <div class="md:w-3/4">
                 <div>
                     <h1 class="text-3xl font-bold mb-4">{{ manga.title_english }}</h1>
                     <p class="mt-4">{{ manga.synopsis }}</p>
@@ -219,7 +220,7 @@ const handleAddToLibrary = async () => {
 
         <div v-if="characters.length > 0">
             <h2 class="text-2xl font-bold mb-4">Characters</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                 <Card v-for="character in mainCharacters" :key="character.character.mal_id" class="flex flex-row">
                     <CardContent class="p-2">
                         <img :src="character.character.images.webp.image_url" :alt="character.character.name"
@@ -234,7 +235,7 @@ const handleAddToLibrary = async () => {
                 </Card>
             </div>
             <div v-if="showAllCharacters">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                     <Card v-for="character in otherCharacters" :key="character.character.mal_id" class="flex flex-row">
                         <CardContent class="p-2">
                             <img :src="character.character.images.webp.image_url" :alt="character.character.name"
@@ -249,11 +250,12 @@ const handleAddToLibrary = async () => {
                     </Card>
                 </div>
             </div>
-        </div>
-        <div v-if="characters.length > 0" class="mt-4">
-            <Button @click="toggleCharacters">
-                {{ showAllCharacters ? 'Hide' : 'More' }} Characters
-            </Button>
+
+            <div v-if="characters.length > 0">
+                <Button @click="toggleCharacters">
+                    {{ showAllCharacters ? 'Hide' : 'More' }} Characters
+                </Button>
+            </div>
         </div>
 
         <Drawer v-model:open="isDrawerOpen">
