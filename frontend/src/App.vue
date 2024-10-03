@@ -6,6 +6,7 @@ import { useUserStore } from './stores/userStore'
 import { storeToRefs } from 'pinia'
 import { useColorMode } from '@vueuse/core'
 import NavBar from './components/MainNavbar.vue'
+import Footer from './components/Footer.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -29,6 +30,7 @@ const isAuthPage = computed(() => {
     <NavBar v-if="!isAuthPage" :user="user" :isAuthenticated="isAuthenticated" :mode="{ value: mode }"
       @update:mode="mode = $event" />
     <RouterView />
+    <Footer />
   </div>
 </template>
 
