@@ -60,7 +60,12 @@ const router = createRouter({
       path: '/mangas/:mangaid/:mangatitle',
       name: 'items',
       component: () => import('@/views/SingleItemPage/index.vue')
-    }
+    },
+    {
+      path: '/verify-email',
+      name: 'VerifyEmail',
+      component: () => import('@/views/VerifyEmailPage/VerifyEmailView.vue')
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

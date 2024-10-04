@@ -3,6 +3,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   UnauthorizedException,
+  NotFoundException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -10,13 +11,15 @@ import { SignupDto } from './dto/signup.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+    private emailService: EmailService,
+  ) { }
 
   async signup(signupDto: SignupDto) {
     const { email, password, username } = signupDto;
@@ -24,7 +27,7 @@ export class AuthService {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      await this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           email,
           username,
@@ -32,7 +35,14 @@ export class AuthService {
         },
       });
 
-      return { message: 'User created successfully' };
+      // Generate verification link
+      const verificationToken = this.jwtService.sign({ userId: user.id }, { expiresIn: '1d' });
+      const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+
+      // Send verification email
+      await this.emailService.sendVerificationEmail(email, verificationLink);
+
+      return { message: 'User created successfully. Please check your email to verify your account.' };
     } catch (error) {
       // P2002 is the Prisma error code for unique constraint violations
       if (error.code === 'P2002') {
@@ -63,6 +73,9 @@ export class AuthService {
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid credentials');
       }
+
+      // After successful login, you might want to send a notification email
+      await this.emailService.sendVerificationEmail(userData.email, 'New login detected');
 
       return this.generateAccessToken(userData.id);
     } catch (error) {
@@ -139,6 +152,33 @@ export class AuthService {
     } catch (error) {
       Logger.error('Error storing refresh token: ' + error.message);
       throw new InternalServerErrorException('Something went wrong');
+    }
+  }
+
+  async verifyEmail(token: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      const user = await this.prisma.user.findUnique({ where: { id: payload.userId } });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (user.emailVerified) {
+        return { message: 'Email already verified' };
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      });
+
+      return { message: 'Email verified successfully' };
+    } catch (error) {
+      // if (error instanceof jwt.JsonWebTokenError) {
+      //   throw new UnauthorizedException('Invalid token');
+      // }
+      throw error;
     }
   }
 }

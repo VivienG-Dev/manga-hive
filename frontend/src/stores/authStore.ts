@@ -124,5 +124,14 @@ export const useAuthStore = defineStore('auth', {
       }
       this.isLoading = false;
     },
+    async verifyEmail(token: string) {
+      try {
+        const response = await api.post('/auth/verify-email', { token })
+        return response.data
+      } catch (error) {
+        console.error('Email verification failed', error)
+        throw error
+      }
+    },
   }
 })

@@ -14,7 +14,7 @@ import { Response, Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   // POST Signup
   @Post('signup')
@@ -75,5 +75,12 @@ export class AuthController {
     response.clearCookie('refreshToken');
     const refreshToken = request.cookies['refreshToken'];
     return await this.authService.logout(refreshToken);
+  }
+
+  // POST Verify Email
+  @Post('verify-email')
+  @Version('1')
+  async verifyEmail(@Body('token') token: string) {
+    return await this.authService.verifyEmail(token);
   }
 }
