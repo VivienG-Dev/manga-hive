@@ -206,7 +206,8 @@ const closeCropper = (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
             <FormItem>
                 <FormLabel>Profile Image</FormLabel>
                 <FormControl>
-                    <img :src="values.avatarUrl ?? ''" alt="User avatar" class="rounded-md">
+                    <img :src="values.avatarUrl ? values.avatarUrl : '/default-avatar.webp'" alt="User avatar"
+                        class="rounded-md w-32 h-32">
                     <Input ref="avatarInputRef" type="file" class="cursor-pointer"
                         @change="(e: Event) => handleFileChange(e, 'avatarUrl')" />
                 </FormControl>
@@ -218,8 +219,12 @@ const closeCropper = (fieldName: 'avatarUrl' | 'backgroundImageUrl') => {
             <FormItem>
                 <FormLabel>Background Image</FormLabel>
                 <FormControl>
-                    <img :src="values.backgroundImageUrl ?? ''" alt="User background" class="rounded-md">
-                    <Input ref="backgroundInputRef" type="file" class="cursor-pointer"
+                    <div v-if="!values.backgroundImageUrl" class="rounded-md w-full h-32 bg-gray-200"
+                        :style="{ backgroundColor: '#e5e5e5' }">
+                    </div>
+                    <img v-else :src="values.backgroundImageUrl" alt="User background"
+                        class="rounded-md w-full h-32 object-cover">
+                    <Input ref="backgroundInputRef" type="file" class="cursor-pointer mt-2"
                         @change="(e: Event) => handleFileChange(e, 'backgroundImageUrl')" />
                 </FormControl>
                 <FormMessage />
