@@ -279,9 +279,9 @@ const updateLibraryEntry = async () => {
                 </CardHeader>
                 <CardContent class="p-0">
                   <p><strong>Status:</strong> {{ formatStatus(entry.status) }}</p>
-                  <p><strong>Chapters:</strong> {{ entry.chapters || 'N/A' }}</p>
                   <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
-                  <p><strong>Score:</strong> {{ entry.score || 'N/A' }}</p>
+                  <p><strong>Score:</strong> {{ entry.userScore || 'N/A' }}</p>
+                  <p><strong>Note:</strong> {{ entry.notes || 'N/A' }}</p>
                 </CardContent>
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>
