@@ -78,7 +78,7 @@ watch(
   <div v-else-if="userData" class="mt-8">
     <Card class="h-96 overflow-hidden">
       <CardHeader class="flex flex-row justify-between items-start h-4/6 bg-cover bg-no-repeat"
-        :style="{ backgroundImage: `url('${userData.backgroundImageUrl || '/default-background.jpg'}')` }">
+        :style="{ backgroundColor: userData.backgroundImageUrl ? 'transparent' : '#e5e5e5', backgroundImage: userData.backgroundImageUrl ? `url('${userData.backgroundImageUrl}')` : 'none' }">
         <div class="bg-white bg-opacity-60 p-2 rounded-md">
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
@@ -89,7 +89,7 @@ watch(
         </div>
       </CardHeader>
       <CardContent class="relative -top-12 flex flex-col justify-center items-center h-2/6 gap-2">
-        <img :src="userData.avatarUrl || '/default-avatar.jpg'" alt="Profile Picture"
+        <img :src="userData.avatarUrl || '/default-avatar.webp'" alt="Profile Picture"
           class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white object-cover" />
         <div class="text-center">
           <h3>{{ userData.username }}</h3>
