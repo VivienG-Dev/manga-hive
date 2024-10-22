@@ -1,8 +1,16 @@
 import { Controller, Get, Post, Put, Delete, Body, UseGuards, Req, Version, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LibraryService } from './library.service';
-import { Status, ItemType } from '@prisma/client';
+import { ItemType } from '@prisma/client';
 import { LibraryDto } from './dto/library.dto';
+
+export enum Status {
+  READING = 'READING',
+  COMPLETED = 'COMPLETED',
+  ON_HOLD = 'ON_HOLD',
+  DROPPED = 'DROPPED',
+  PLAN_TO_READ = 'PLAN_TO_READ'
+}
 
 @Controller('library')
 export class LibraryController {
