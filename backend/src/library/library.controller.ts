@@ -1,8 +1,12 @@
 import { Controller, Get, Post, Put, Delete, Body, UseGuards, Req, Version, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { LibraryService } from './library.service';
-import { ItemType } from '@prisma/client';
+// import { ItemType } from '@prisma/client';
 import { LibraryDto } from './dto/library.dto';
+
+export enum ItemType {
+  MANGA = 'MANGA',
+}
 
 export enum Status {
   READING = 'READING',
@@ -21,7 +25,7 @@ export class LibraryController {
   @Post()
   async addToLibrary(@Req() req, @Body() data: {
     malId: number;
-    itemType: "MANGA";
+    itemType: ItemType;
     status: Status;
     title: string;
     imageUrl: string;

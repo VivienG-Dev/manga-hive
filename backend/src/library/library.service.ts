@@ -1,7 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Status, ItemType } from '@prisma/client';
+// import { ItemType } from '@prisma/client';
 import { LibraryDto } from './dto/library.dto';
+
+export enum ItemType {
+  MANGA = 'MANGA',
+}
+
+export enum Status {
+  READING = 'READING',
+  COMPLETED = 'COMPLETED',
+  ON_HOLD = 'ON_HOLD',
+  DROPPED = 'DROPPED',
+  PLAN_TO_READ = 'PLAN_TO_READ'
+}
+
 @Injectable()
 export class LibraryService {
   constructor(private prisma: PrismaService) { }
