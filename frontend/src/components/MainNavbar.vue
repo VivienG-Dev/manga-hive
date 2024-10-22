@@ -35,17 +35,17 @@ const logout = async () => {
 </script>
 
 <template>
-  <nav class="sticky top-0 z-50 p-2 shadow dark:shadow-none bg-white dark:bg-background">
+  <nav class="sticky top-0 z-50 p-2 shadow-neo-bar dark:shadow-none bg-white dark:bg-background">
     <div class="container p-0 md:px-4 mx-auto flex justify-between items-center">
       <RouterLink to="/" class="text-3xl font-bold">
         <h1 class="text-xl font-bold">Manga Hive</h1>
       </RouterLink>
       <div class="hidden md:flex items-center gap-4">
         <RouterLink v-if="isAuthenticated" to="/profile">Profile</RouterLink>
-        <RouterLink v-else to="/sign-in"><Button>Login</Button></RouterLink>
+        <RouterLink v-else to="/sign-in"><Button variant="neo">Login</Button></RouterLink>
         <div class="flex items-center gap-4" v-if="isAuthenticated">
           <p>Welcome, {{ user?.username || 'Guest' }}!</p>
-          <Button @click.prevent="logout">Logout</Button>
+          <Button @click.prevent="logout" variant="neo">Logout</Button>
         </div>
         <div class="border-l border-slate-800 dark:border-slate-500 ml-2 pl-2">
           <DropdownMenu>
@@ -58,7 +58,7 @@ const logout = async () => {
                 <span class="sr-only">Toggle theme</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent class="shadow-neo border border-black dark:border-slate-500" align="end">
               <DropdownMenuItem @click="$emit('update:mode', 'light')"> Light </DropdownMenuItem>
               <DropdownMenuItem @click="$emit('update:mode', 'dark')"> Dark </DropdownMenuItem>
               <DropdownMenuItem @click="$emit('update:mode', 'auto')"> System </DropdownMenuItem>

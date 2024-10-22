@@ -184,11 +184,14 @@ onMounted(async () => {
         </template>
         <template v-else>
           <Card v-for="manga in mangaLibraryStore.topManga" :key="manga.mal_id" :data-manga-id="manga.mal_id"
-            class="p-2 space-y-4 cursor-pointer" @click="goToMangaPage(manga)">
+            class="p-2 space-y-4 cursor-pointer hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200"
+            @click="goToMangaPage(manga)">
             <CardHeader class="relative p-0">
               <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-80 object-cover rounded-md"
                 :style="`view-transition-name: card-${manga.mal_id};`" />
-              <Button @click.stop="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
+              <div class="absolute -bottom-2 -right-2 bg-white w-14 h-14 rounded-md"></div>
+              <Button @click.stop="openDrawer(manga)" size="icon" variant="neo"
+                class="absolute bottom-1 right-1 space-x-2 cursor-pointer">
                 <CirclePlus class="w-6 h-6" />
               </Button>
             </CardHeader>
@@ -201,20 +204,22 @@ onMounted(async () => {
     </div>
 
     <div class="flex space-x-2">
-      <Select v-model="searchType" class="w-[180px]">
-        <SelectTrigger class="bg-white">
-          <SelectValue placeholder="Select a search type" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Search In</SelectLabel>
-            <SelectItem value="manga">Manga</SelectItem>
-            <SelectItem value="users">Users</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Input v-model="searchQuery" placeholder="Search..." class="flex-grow bg-white" />
-      <Button @click="handleSearch">Search</Button>
+      <div class="w-1/3 md:w-1/5">
+        <Select v-model="searchType">
+          <SelectTrigger class="bg-white border border-black dark:border-slate-500">
+            <SelectValue placeholder="Select a search type" />
+          </SelectTrigger>
+          <SelectContent class="shadow-neo border border-black dark:border-slate-500">
+            <SelectGroup>
+              <SelectLabel>Search In</SelectLabel>
+              <SelectItem value="manga">Manga</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+      <Input v-model="searchQuery" placeholder="Search..."
+        class="flex-grow bg-white w-2/3 md:w-4/5 border border-black dark:border-slate-500" />
+      <Button @click="handleSearch" variant="neo">Search</Button>
     </div>
 
     <div v-if="searchType === 'manga'">
@@ -225,11 +230,14 @@ onMounted(async () => {
         </template>
         <template v-else>
           <Card v-for="manga in mangaLibraryStore.searchResults" :key="manga.mal_id" :data-manga-id="manga.mal_id"
-            class="p-2 space-y-4 cursor-pointer" @click="goToMangaPage(manga)">
+            class="p-2 space-y-4 cursor-pointer hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200"
+            @click="goToMangaPage(manga)">
             <CardHeader class="relative p-0">
               <img :src="manga.images.jpg.image_url" :alt="manga.title" class="w-full h-80 object-cover rounded-md"
                 :style="`view-transition-name: card-${manga.mal_id};`" />
-              <Button @click.stop="openDrawer(manga)" size="icon" class="absolute bottom-2 right-2 space-x-2">
+              <div class="absolute -bottom-2 -right-2 bg-white w-14 h-14 rounded-md"></div>
+              <Button @click.stop="openDrawer(manga)" size="icon" variant="neo"
+                class="absolute bottom-1 right-1 space-x-2 cursor-pointer">
                 <CirclePlus class="w-6 h-6" />
               </Button>
             </CardHeader>
@@ -312,7 +320,7 @@ onMounted(async () => {
             <DrawerClose class="w-full">
               <Button class="w-full" variant="outline">Cancel</Button>
             </DrawerClose>
-            <Button class="w-full" @click="handleAddToLibrary">Add to Library</Button>
+            <Button class="w-full" @click="handleAddToLibrary" variant="neo">Add to Library</Button>
           </DrawerFooter>
         </div>
       </DrawerContent>

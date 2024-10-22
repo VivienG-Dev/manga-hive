@@ -146,7 +146,7 @@ const handleAddToLibrary = async () => {
             <div class="md:w-1/4 flex flex-col gap-2">
                 <img :src="manga.images.webp.large_image_url" :alt="manga.title" class="w-full rounded-lg shadow-lg"
                     :style="`view-transition-name: card-${manga.mal_id};`" />
-                <Button @click.stop="openDrawer(manga)">Add to list</Button>
+                <Button @click.stop="openDrawer(manga)" variant="neo">Add to list</Button>
             </div>
             <div class="md:w-3/4">
                 <div>
@@ -154,34 +154,34 @@ const handleAddToLibrary = async () => {
                     <p class="mt-4">{{ manga.synopsis }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4 mt-4">
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Janapese title:</span> {{ manga.title_japanese }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Romaji title:</span> {{ manga.title }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Start date:</span> {{ formatDate(manga.published.from) ?? 'N/A'
                             }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">End date:</span> {{ isDefaultDate(manga.published.to)
                                 ? 'N/A' : formatDate(manga.published.to) }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Status:</span> {{ manga.status }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Genres:</span>
                             {{ manga.genres.map(genre => genre.name).join(', ') }}
@@ -192,22 +192,22 @@ const handleAddToLibrary = async () => {
                             <span class="font-semibold">Score:</span> {{ manga.score }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Chapters:</span> {{ manga.chapters }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Volumes:</span> {{ manga.volumes }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold">Type:</span> {{ manga.type }}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card class="border border-black dark:border-slate-500 rounded-md">
                         <CardContent class="flex flex-col md:flex-row p-2">
                             <span class="font-semibold" v-if="manga.authors.length > 1">Authors:</span>
                             <span class="font-semibold" v-else>Author:</span>
@@ -221,7 +221,8 @@ const handleAddToLibrary = async () => {
         <div v-if="characters.length > 0">
             <h2 class="text-2xl font-bold mb-4">Characters</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-                <Card v-for="character in mainCharacters" :key="character.character.mal_id" class="flex flex-row">
+                <Card v-for="character in mainCharacters" :key="character.character.mal_id"
+                    class="flex flex-row hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200">
                     <CardContent class="p-2">
                         <img :src="character.character.images.webp.image_url" :alt="character.character.name"
                             class="w-auto h-28 object-cover rounded-md" />
@@ -236,7 +237,8 @@ const handleAddToLibrary = async () => {
             </div>
             <div v-if="showAllCharacters">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-                    <Card v-for="character in otherCharacters" :key="character.character.mal_id" class="flex flex-row">
+                    <Card v-for="character in otherCharacters" :key="character.character.mal_id"
+                        class="flex flex-row border border-black dark:border-slate-500 transition-all duration-200">
                         <CardContent class="p-2">
                             <img :src="character.character.images.webp.image_url" :alt="character.character.name"
                                 class="w-20 h-28 object-cover rounded-md" />
@@ -252,7 +254,7 @@ const handleAddToLibrary = async () => {
             </div>
 
             <div v-if="characters.length > 0">
-                <Button @click="toggleCharacters">
+                <Button @click="toggleCharacters" variant="neo">
                     {{ showAllCharacters ? 'Hide' : 'More' }} Characters
                 </Button>
             </div>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, TransitionGroup } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
-import { useMangaLibraryStore } from '@/stores/mangaLibraryStore'
+import { useMangaLibraryStore, type JikanManga, type LibraryEntry } from '@/stores/mangaLibraryStore'
 import type { UserData } from '@/stores/userStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -50,11 +51,14 @@ const authStore = useAuthStore()
 const userStore = useUserStore()
 const mangaLibraryStore = useMangaLibraryStore()
 const { toast } = useToast()
+const router = useRouter()
 
 const userData = ref<UserData | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
+const selectedManga = ref<JikanManga | null>(null)
+const selectedLibraryEntry = ref<LibraryEntry | null>(null)
 const isDrawerOpen = ref(false)
 const selectedEntry = ref<any>(null)
 const status = ref<'PLAN_TO_READ' | 'READING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED'>('PLAN_TO_READ')
@@ -200,6 +204,13 @@ const updateLibraryEntry = async () => {
     })
   }
 }
+
+const goToMangaPage = (manga: LibraryEntry) => {
+  const mangaId = manga.malId.toString()
+  router.push({
+    path: `/mangas/${mangaId}/${manga.title.replace(/ /g, '-')}`,
+  })
+}
 </script>
 
 <template>
@@ -207,15 +218,16 @@ const updateLibraryEntry = async () => {
   <div v-else-if="error" class="mt-8">{{ error }}</div>
   <div v-else-if="userData" class="mt-8">
     <Toaster />
-    <Card class="h-96 overflow-hidden">
+    <Card class="h-96 overflow-hidden border border-black dark:border-slate-500">
       <CardHeader class="flex flex-row justify-between items-start h-4/6 bg-cover bg-no-repeat"
         :style="{ backgroundColor: userData.backgroundImageUrl ? 'transparent' : '#e5e5e5', backgroundImage: userData.backgroundImageUrl ? `url('${userData.backgroundImageUrl}')` : 'none' }">
-        <div class="bg-white bg-opacity-60 p-2 rounded-md">
+        <div class="bg-white p-2 rounded-md border border-black dark:border-slate-500 transition-all duration-200">
           <CardTitle class="text-foreground dark:text-background">My profile</CardTitle>
         </div>
         <div v-if="authStore.isAuthenticated && userStore.user?.id === userData.id">
           <RouterLink to="/settings">
-            <Button variant="outline" class="bg-white bg-opacity-60 p-2 rounded-md">Settings</Button>
+            <Button variant="outline"
+              class="bg-white bg-opacity-90 p-2 rounded-md hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200">Settings</Button>
           </RouterLink>
         </div>
       </CardHeader>
@@ -234,10 +246,11 @@ const updateLibraryEntry = async () => {
       <div class="flex items-center space-x-4 mb-4">
         <div>
           <Select v-model="sortOrder" id="sort-order" class="p-2 border rounded">
-            <SelectTrigger class="bg-white">
+            <SelectTrigger
+              class="bg-white hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent class="shadow-neo border border-black dark:border-slate-500">
               <SelectGroup>
                 <SelectLabel>Sort By</SelectLabel>
                 <SelectItem value="asc">A-Z</SelectItem>
@@ -248,10 +261,11 @@ const updateLibraryEntry = async () => {
         </div>
         <div>
           <Select v-model="statusFilter" id="status-filter" class="p-2 border rounded">
-            <SelectTrigger class="bg-white">
+            <SelectTrigger
+              class="bg-white hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent class="shadow-neo border border-black dark:border-slate-500">
               <SelectGroup>
                 <SelectLabel>Status</SelectLabel>
                 <SelectItem value="all">All</SelectItem>
@@ -269,7 +283,9 @@ const updateLibraryEntry = async () => {
       <div>
         <TransitionGroup name="fade" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Transition v-for="entry in filteredAndSortedEntries" :key="entry.id" name="fade">
-            <Card class="relative flex items-center space-x-4 p-2">
+            <Card
+              class="relative flex items-center space-x-4 p-2 hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200 cursor-pointer"
+              @click="goToMangaPage(entry)">
               <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
                 class="w-30 h-40 object-cover rounded-md" />
               <Skeleton v-else class="h-64 w-full" />
@@ -284,15 +300,15 @@ const updateLibraryEntry = async () => {
                   <p><strong>Note:</strong> {{ entry.notes || 'N/A' }}</p>
                 </CardContent>
                 <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
+                  <DropdownMenuTrigger as-child @click.stop>
                     <Button class="absolute bottom-2 right-2" variant="ghost">
                       <Ellipsis :size="20" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" class="shadow-neo border border-black dark:border-slate-500">
                     <DropdownMenuGroup>
                       <DropdownMenuItem @click.stop="openDrawer(entry)" class="cursor-pointer"> Edit </DropdownMenuItem>
-                      <DropdownMenuItem @click="removeFromLibrary(entry.id)" class="cursor-pointer"> Delete
+                      <DropdownMenuItem @click.stop="removeFromLibrary(entry.id)" class="cursor-pointer"> Delete
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
