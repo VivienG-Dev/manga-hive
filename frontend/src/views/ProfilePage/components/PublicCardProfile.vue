@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useMangaLibraryStore, type JikanManga, type LibraryEntry } from '@/stores/mangaLibraryStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
 import type { UserData } from '@/stores/userStore'
@@ -20,6 +21,9 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const userStore = useUserStore()
+
+const mangaLibraryStore = useMangaLibraryStore()
+const selectedLibraryEntry = ref<LibraryEntry | null>(null)
 
 const userData = ref<UserData | null>(null)
 const loading = ref(true)
@@ -70,6 +74,13 @@ watch(
     }
   }
 )
+
+const goToMangaPage = (manga: LibraryEntry) => {
+  const mangaId = manga.malId.toString()
+  router.push({
+    path: `/mangas/${mangaId}/${manga.title.replace(/ /g, '-')}`,
+  })
+}
 </script>
 
 <template>
@@ -139,7 +150,9 @@ watch(
       <div>
         <TransitionGroup name="fade" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Transition v-for="entry in filteredAndSortedEntries" :key="entry.id" name="fade">
-            <Card class="flex items-center space-x-4 p-2">
+            <Card
+              class="flex items-center space-x-4 p-2 hover:shadow-neo border border-black dark:border-slate-500 transition-all duration-200"
+              @click="goToMangaPage(entry)">
               <img v-if="entry.imageUrl" :src="entry.imageUrl" :alt="entry.title"
                 class="w-30 h-40 object-cover rounded-md" />
               <div class="space-y-4">
