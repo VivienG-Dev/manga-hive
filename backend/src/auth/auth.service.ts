@@ -7,9 +7,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SignupDto } from './dto/signup.dto';
+import { SignupDto } from './Dto/signup.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto } from './Dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
 
