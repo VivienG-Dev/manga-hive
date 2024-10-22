@@ -90,6 +90,10 @@ module.exports = {
       backgroundImage: {
         'sign-in': "url('/src/assets/images/konosuba-1.webp')",
         'sign-up': "url('/src/assets/images/konosuba-1.webp')"
+      },
+      boxShadow: {
+        'neo-bar': '0px 6px 0px 0px hsl(213,13%,16%)',
+        'neo': '4px 4px 0px 0px hsl(213,13%,16%)',
       }
     }
   },
