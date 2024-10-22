@@ -74,13 +74,13 @@ export interface JikanImage {
   }
 }
 
-interface LibraryEntry {
+export interface LibraryEntry {
   id: number;
   userId: number;
   malId: number;
   itemType: 'MANGA' | 'ANIME';
   status: 'PLAN_TO_READ' | 'READING' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED';
-  title: string | null;
+  title: string;
   imageUrl: string | null;
   synopsis: string | null;
   authors: string | null;
