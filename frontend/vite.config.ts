@@ -28,5 +28,13 @@ export default defineConfig({
         cookieDomainRewrite: 'localhost'
       }
     }
-  }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+      },
+    },
+  },
+  publicDir: 'public',
 })
