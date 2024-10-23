@@ -161,7 +161,7 @@ const goToMangaPage = (manga: LibraryEntry) => {
                 </CardHeader>
                 <CardContent class="p-0">
                   <p><strong>Status:</strong> {{ entry.status }}</p>
-                  <p><strong>Volumes:</strong> {{ entry.volumes || 'N/A' }}</p>
+                  <p><strong>Volumes:</strong> {{ entry.volumesProgress || 'N/A' }}</p>
                   <p><strong>Score:</strong> {{ entry.userScore || 'N/A' }}</p>
                   <p><strong>Note:</strong> {{ entry.notes || 'N/A' }}</p>
                 </CardContent>
