@@ -35,7 +35,7 @@ export class AuthController {
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
     });
 
@@ -59,7 +59,7 @@ export class AuthController {
     response.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
     });
 
