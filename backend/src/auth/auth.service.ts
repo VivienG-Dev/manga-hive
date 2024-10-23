@@ -74,9 +74,6 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      // After successful login, you might want to send a notification email
-      await this.emailService.sendVerificationEmail(userData.email, 'New login detected');
-
       return this.generateAccessToken(userData.id);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
