@@ -34,9 +34,10 @@ export class AuthController {
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
+      secure: true, // Always use secure in production
+      sameSite: 'none', // Allow cross-site cookie
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
+      domain: '.onrender.com', // Shared top-level domain
     });
 
     return { accessToken };
@@ -58,9 +59,10 @@ export class AuthController {
 
     response.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
+      secure: true, // Always use secure in production
+      sameSite: 'none', // Allow cross-site cookie
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
+      domain: '.onrender.com', // Shared top-level domain
     });
 
     return { accessToken };
